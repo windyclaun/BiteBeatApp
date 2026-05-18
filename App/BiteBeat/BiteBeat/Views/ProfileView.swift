@@ -1,5 +1,6 @@
 import BiteBeatMusic
 import MusicKit
+import StoreKit
 import SwiftUI
 
 struct ProfileView: View {
@@ -7,6 +8,7 @@ struct ProfileView: View {
     @State private var recentSongs: [Song] = []
     @State private var dominantVibe: MusicVibe = .comfortingWarm
     @State private var isLoadingVibe = true
+    @State private var storefrontCountry = "Loading…"
 
     var body: some View {
         List {
@@ -18,12 +20,19 @@ struct ProfileView: View {
                         .symbolRenderingMode(.hierarchical)
                         .padding(.top, 8)
                     
-                    VStack(spacing: 4) {
-                        Text("Music Foodie")
-                            .font(.title2.bold())
-                        Text("premium.user@bitebeat.app")
-                            .font(.subheadline)
+                    VStack(spacing: 6) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "apple.logo")
+                            Text("Apple Music User")
+                        }
+                        .font(.title2.bold())
+                        
+                        Text(" Secured Account Link")
+                            .font(.caption.bold())
                             .foregroundStyle(.secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(.quaternary, in: Capsule())
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -72,6 +81,11 @@ struct ProfileView: View {
                         .bold()
                 }
                 
+                LabeledContent("Storefront") {
+                    Text(storefrontCountry)
+                        .foregroundStyle(.secondary)
+                }
+                
                 if let subscription = musicSession.musicSubscription {
                     LabeledContent("Play Catalog") {
                         Image(systemName: subscription.canPlayCatalogContent ? "checkmark.circle.fill" : "xmark.circle")
@@ -113,6 +127,34 @@ struct ProfileView: View {
     
     private func fetchRecentSongsAndAnalyze() async {
         isLoadingVibe = true
+        
+        var countryCode: String? = nil
+        if #available(iOS 18.0, *) {
+            countryCode = try? await MusicDataRequest.currentCountryCode
+        } else {
+            let controller = SKCloudServiceController()
+            countryCode = try? await controller.requestStorefrontCountryCode()
+        }
+        
+        if let code = countryCode {
+            let cleanCode = code.lowercased()
+            let countries = [
+                "id": "Indonesia 🇮🇩",
+                "us": "United States 🇺🇸",
+                "gb": "United Kingdom 🇬🇧",
+                "sg": "Singapore 🇸🇬",
+                "my": "Malaysia 🇲🇾",
+                "jp": "Japan 🇯🇵",
+                "au": "Australia 🇦🇺",
+                "ca": "Canada 🇨🇦",
+                "de": "Germany 🇩🇪",
+                "fr": "France 🇫🇷"
+            ]
+            storefrontCountry = countries[cleanCode] ?? cleanCode.uppercased()
+        } else {
+            storefrontCountry = "Not Available"
+        }
+        
         do {
             var request = MusicRecentlyPlayedRequest<Song>()
             request.limit = 10
