@@ -1,24 +1,29 @@
 //
 //  ContentView.swift
-//  BiteBeat
-//
-//  Created by Windy Claudia Napitupulu on 18/05/26.
+//  test_music_kit
 //
 
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(MusicSessionManager.self) private var musicSession
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        Group {
+            if musicSession.isAuthorized {
+                MainTabView()
+            } else {
+                AuthorizationView()
+            }
         }
-        .padding()
+        .animation(.easeInOut, value: musicSession.isAuthorized)
+        .onAppear {
+            musicSession.refreshAuthorizationStatus()
+        }
     }
 }
 
 #Preview {
     ContentView()
+        .environment(MusicSessionManager())
 }
