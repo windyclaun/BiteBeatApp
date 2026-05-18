@@ -63,8 +63,11 @@ struct AlbumDetailView: View {
         .navigationDestination(for: Album.self) { related in
             AlbumDetailView(album: related)
         }
-        .alert("Playback Error", isPresented: .constant(playbackError != nil)) {
-            Button("OK") { playbackError = nil }
+        .alert("Playback Error", isPresented: Binding(
+            get: { playbackError != nil },
+            set: { if !$0 { playbackError = nil } }
+        )) {
+            Button("OK") {}
         } message: {
             if let playbackError { Text(playbackError) }
         }
@@ -195,24 +198,4 @@ private func formatDuration(_ seconds: TimeInterval) -> String {
     let minutes = total / 60
     let secs = total % 60
     return String(format: "%d:%02d", minutes, secs)
-}
-
-private struct AlbumRow: View {
-    let album: Album
-
-    var body: some View {
-        HStack(spacing: 14) {
-            ArtworkImage(artwork: album.artwork)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(album.title)
-                    .font(.body.weight(.medium))
-                    .lineLimit(1)
-                Text(album.artistName)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-        }
-        .padding(.vertical, 4)
-    }
 }

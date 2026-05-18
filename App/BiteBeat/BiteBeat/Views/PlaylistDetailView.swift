@@ -46,8 +46,11 @@ struct PlaylistDetailView: View {
         .listStyle(.insetGrouped)
         .navigationTitle(displayPlaylist.name)
         .navigationBarTitleDisplayMode(.inline)
-        .alert("Playback Error", isPresented: .constant(playbackError != nil)) {
-            Button("OK") { playbackError = nil }
+        .alert("Playback Error", isPresented: Binding(
+            get: { playbackError != nil },
+            set: { if !$0 { playbackError = nil } }
+        )) {
+            Button("OK") {}
         } message: {
             if let playbackError { Text(playbackError) }
         }

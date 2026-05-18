@@ -43,6 +43,14 @@ struct AccountView: View {
                 }
             }
 
+            Section(footer: Text("Apple Music authorization is managed securely by iOS. To fully revoke access, disable 'Media & Apple Music' in the system settings for BiteBeat.")) {
+                Button(role: .destructive) {
+                    openSystemSettings()
+                } label: {
+                    Label("Disconnect Apple Music", systemImage: "rectangle.portrait.and.arrow.right")
+                }
+            }
+
             Section {
                 Text("Enable MusicKit for your App ID in the Apple Developer portal (App Services → MusicKit) so developer tokens are generated automatically.")
                     .font(.footnote)
@@ -68,5 +76,11 @@ struct AccountView: View {
         case .denied, .restricted: .orange
         default: .secondary
         }
+    }
+
+    private func openSystemSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString),
+              UIApplication.shared.canOpenURL(url) else { return }
+        UIApplication.shared.open(url)
     }
 }
