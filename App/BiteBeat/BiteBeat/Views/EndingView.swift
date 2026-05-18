@@ -32,22 +32,19 @@ struct EndingView: View {
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ))
-                    .frame(width: 140, height: 140)
-                    .blur(radius: 25)
+                    .frame(width: 160, height: 160)
+                    .blur(radius: 20)
                     .opacity(0.3)
                 
-                Circle()
-                    .fill(LinearGradient(
-                        colors: selectedMeal.swiftUIColors,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    .frame(width: 110, height: 110)
-                
-                Image(systemName: "hand.thumbsup.fill")
-                    .font(.system(size: 44))
-                    .foregroundStyle(.white)
-                    .symbolEffect(.bounce, options: .repeating)
+                FoodImageView(
+                    mealTitle: selectedMeal.title,
+                    wikipediaQuery: selectedMeal.wikipediaSearchQuery,
+                    fallbackUrl: selectedMeal.imageUrl
+                )
+                .frame(width: 130, height: 130)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(LinearGradient(colors: selectedMeal.swiftUIColors, startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 3))
+                .shadow(color: selectedMeal.swiftUIColors.first?.opacity(0.3) ?? .black.opacity(0.1), radius: 10, y: 5)
             }
             .padding(.top, 16)
             

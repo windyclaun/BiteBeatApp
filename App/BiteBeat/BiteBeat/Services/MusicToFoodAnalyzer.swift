@@ -17,6 +17,7 @@ public struct Meal: Identifiable, Hashable, Sendable {
     public let description: String
     public let systemImage: String
     public let gradientColors: [String] // Nama warna gradient biar gampang diconvert ke SwiftUI Color
+    public let imageUrl: String
     
     public init(
         title: String,
@@ -25,7 +26,8 @@ public struct Meal: Identifiable, Hashable, Sendable {
         calories: String,
         description: String,
         systemImage: String,
-        gradientColors: [String]
+        gradientColors: [String],
+        imageUrl: String = ""
     ) {
         self.id = UUID()
         self.title = title
@@ -35,6 +37,28 @@ public struct Meal: Identifiable, Hashable, Sendable {
         self.description = description
         self.systemImage = systemImage
         self.gradientColors = gradientColors
+        self.imageUrl = imageUrl
+    }
+    
+    public var wikipediaSearchQuery: String {
+        switch title {
+        case "Nasi Uduk Ayam Goreng": return "Nasi uduk"
+        case "Sate Ayam Madura": return "Sate"
+        case "Nasi Goreng Gila": return "Nasi goreng"
+        case "Bubur Ayam Kuning": return "Bubur ayam"
+        case "Sop Ayam Kampung": return "Sop"
+        case "Soto Betawi Kuah Susu": return "Soto Betawi"
+        case "Martabak Cokelat Keju": return "Martabak"
+        case "Pisang Goreng Madu": return "Pisang goreng"
+        case "Roti Bakar Bandung": return "Roti bakar"
+        case "Gado-Gado Siram": return "Gado-gado"
+        case "Ketoprak Jakarta": return "Ketoprak"
+        case "Pecel Madiun": return "Nasi pecel"
+        case "Nasi Padang Rendang": return "Rendang"
+        case "Iga Bakar Madu": return "Iga penyet"
+        case "Mie Goreng Jawa Nyemek": return "Mie goreng"
+        default: return title
+        }
     }
     
     // Bersihin nama jarak di teks lokasi
@@ -172,7 +196,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                     calories: "680 kcal",
                     description: "Nasi uduk gurih wangi pandan disajikan hangat pakai ayam goreng kuning renyah, tempe garing, lalapan segar, plus sambal terasi ulek yang pedasnya mantap!",
                     systemImage: "flame.fill",
-                    gradientColors: ["orange", "red"]
+                    gradientColors: ["orange", "red"],
+                    imageUrl: "https://images.unsplash.com/photo-1615887023516-9b6bcd559e87?w=600&auto=format&fit=crop"
                 ),
                 alternatives: [
                     Meal(
@@ -182,7 +207,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                         calories: "520 kcal",
                         description: "10 tusuk sate daging ayam pilihan yang empuk dibalur bumbu kacang kental gurih manis khas Madura, lengkap dengan lontong hangat.",
                         systemImage: "fork.knife",
-                        gradientColors: ["yellow", "orange"]
+                        gradientColors: ["yellow", "orange"],
+                        imageUrl: "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=600&auto=format&fit=crop"
                     ),
                     Meal(
                         title: "Nasi Goreng Gila",
@@ -191,7 +217,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                         calories: "720 kcal",
                         description: "Nasi goreng wangi khas kaki lima yang disajikan super heboh dengan tumisan telur acak, sosis, dan suwiran ayam pedas gurih.",
                         systemImage: "fork.knife",
-                        gradientColors: ["red", "pink"]
+                        gradientColors: ["red", "pink"],
+                        imageUrl: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=600&auto=format&fit=crop"
                     )
                 ]
             )
@@ -205,7 +232,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                     calories: "420 kcal",
                     description: "Bubur nasi lembut gurih disiram kuah kuning harum, ditaburi suwiran ayam melimpah, kacang kedelai, seledri, bawang goreng, emping garing, plus sate usus!",
                     systemImage: "sparkles",
-                    gradientColors: ["yellow", "orange"]
+                    gradientColors: ["yellow", "orange"],
+                    imageUrl: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=600&auto=format&fit=crop"
                 ),
                 alternatives: [
                     Meal(
@@ -215,7 +243,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                         calories: "380 kcal",
                         description: "Kuah sop bening kaldu ayam kampung yang super gurih dan hangat di tenggorokan, lengkap dengan potongan wortel, kentang lembut, dan seledri segar.",
                         systemImage: "fork.knife",
-                        gradientColors: ["green", "teal"]
+                        gradientColors: ["green", "teal"],
+                        imageUrl: "https://images.unsplash.com/photo-1547592165-e1d17fed6006?w=600&auto=format&fit=crop"
                     ),
                     Meal(
                         title: "Soto Betawi Kuah Susu",
@@ -224,7 +253,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                         calories: "620 kcal",
                         description: "Daging sapi empuk dalam kuah susu santan gurih berempah khas Betawi, lengkap dengan kentang goreng lembut, potongan tomat segar, emping empuk, dan jeruk limo.",
                         systemImage: "fork.knife",
-                        gradientColors: ["orange", "red"]
+                        gradientColors: ["orange", "red"],
+                        imageUrl: "https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=600&auto=format&fit=crop"
                     )
                 ]
             )
@@ -238,7 +268,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                     calories: "850 kcal",
                     description: "Martabak tebal legit berongga wangi mentega Wijsman super melimpah, ditaburi parutan keju tebal, butiran cokelat meses premium, dan kental manis yang bikin bahagia lahir batin!",
                     systemImage: "heart.fill",
-                    gradientColors: ["pink", "purple"]
+                    gradientColors: ["pink", "purple"],
+                    imageUrl: "https://images.unsplash.com/photo-1551024601-bec78aea704b?w=600&auto=format&fit=crop"
                 ),
                 alternatives: [
                     Meal(
@@ -248,7 +279,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                         calories: "420 kcal",
                         description: "Pisang raja manis yang digoreng hingga karamelisasi madunya berwarna cokelat gelap garing di luar namun sangat lembut legit di dalam.",
                         systemImage: "fork.knife",
-                        gradientColors: ["purple", "blue"]
+                        gradientColors: ["purple", "blue"],
+                        imageUrl: "https://images.unsplash.com/photo-1566843972142-a7fcb70de55a?w=600&auto=format&fit=crop"
                     ),
                     Meal(
                         title: "Roti Bakar Bandung",
@@ -257,7 +289,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                         calories: "550 kcal",
                         description: "Roti bakar empuk beraroma wangi panggangan mentega dengan isian selai cokelat manis dan serutan keju cheddar gurih melimpah.",
                         systemImage: "fork.knife",
-                        gradientColors: ["yellow", "orange"]
+                        gradientColors: ["yellow", "orange"],
+                        imageUrl: "https://images.unsplash.com/photo-1584776296974-3823445859c2?w=600&auto=format&fit=crop"
                     )
                 ]
             )
@@ -271,7 +304,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                     calories: "450 kcal",
                     description: "Rebusan sayur segar pilihan (kacang panjang, tauge, bayam, labu siam) dipadu tahu putih, tempe garing, telur rebus, disiram bumbu kacang mete kental gurih manis wangi limo!",
                     systemImage: "leaf.fill",
-                    gradientColors: ["green", "teal"]
+                    gradientColors: ["green", "teal"],
+                    imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&auto=format&fit=crop"
                 ),
                 alternatives: [
                     Meal(
@@ -281,7 +315,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                         calories: "480 kcal",
                         description: "Irisan ketupat empuk padat, tahu goreng hangat renyah, bihun lembut, tauge segar disiram ulekan bumbu kacang bawang putih cabai rawit gurih manis plus taburan emping.",
                         systemImage: "fork.knife",
-                        gradientColors: ["teal", "blue"]
+                        gradientColors: ["teal", "blue"],
+                        imageUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&auto=format&fit=crop"
                     ),
                     Meal(
                         title: "Pecel Madiun",
@@ -290,7 +325,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                         calories: "390 kcal",
                         description: "Nasi putih hangat dengan kombinasi kangkung, tauge, daun pepaya manis, disiram bumbu pecel pedas gurih harum daun jeruk limo, disajikan dengan peyek kacang renyah.",
                         systemImage: "fork.knife",
-                        gradientColors: ["green", "yellow"]
+                        gradientColors: ["green", "yellow"],
+                        imageUrl: "https://images.unsplash.com/photo-1515003848606-ca0597947d65?w=600&auto=format&fit=crop"
                     )
                 ]
             )
@@ -304,7 +340,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                     calories: "780 kcal",
                     description: "Nasi putih hangat disiram kuah gulai gurih berempah, sayur nangka muda lembut, sambal hijau pedas khas Minang, plus sepotong Rendang Daging Sapi tebal yang bumbunya meresap sempurna!",
                     systemImage: "bolt.fill",
-                    gradientColors: ["red", "purple"]
+                    gradientColors: ["red", "purple"],
+                    imageUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop"
                 ),
                 alternatives: [
                     Meal(
@@ -314,7 +351,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                         calories: "720 kcal",
                         description: "Iga sapi potong tebal yang empuk banget dilepas dari tulangnya, dibakar dengan baluran kecap manis madu premium, disajikan hangat wangi semerbak.",
                         systemImage: "fork.knife",
-                        gradientColors: ["orange", "red"]
+                        gradientColors: ["orange", "red"],
+                        imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop"
                     ),
                     Meal(
                         title: "Mie Goreng Jawa Nyemek",
@@ -323,7 +361,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                         calories: "680 kcal",
                         description: "Bakmi kuning tebal yang dimasak nyemek berkuah kental sedikit dengan telur bebek acak, suwiran ayam kol sayur segar, rasa manis gurihnya mantap berkarakter!",
                         systemImage: "fork.knife",
-                        gradientColors: ["purple", "pink"]
+                        gradientColors: ["purple", "pink"],
+                        imageUrl: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=600&auto=format&fit=crop"
                     )
                 ]
             )

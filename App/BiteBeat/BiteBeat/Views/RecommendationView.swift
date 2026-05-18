@@ -165,58 +165,45 @@ struct RecommendationView: View {
     
     @ViewBuilder
     private func mainCard(for meal: Meal) -> some View {
-        VStack(spacing: 20) {
-            ZStack {
-                Circle()
-                    .fill(LinearGradient(
-                        colors: meal.swiftUIColors,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    .frame(width: 150, height: 150)
-                    .blur(radius: 20)
-                    .opacity(0.3)
-                
-                Circle()
-                    .fill(LinearGradient(
-                        colors: meal.swiftUIColors,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    .frame(width: 120, height: 120)
-                    .shadow(color: meal.swiftUIColors.first?.opacity(0.4) ?? .black.opacity(0.1), radius: 10, y: 5)
-                
-                Image(systemName: meal.systemImage)
-                    .font(.system(size: 52))
-                    .foregroundStyle(.white)
-            }
-            .padding(.top, 16)
+        VStack(spacing: 0) {
+            FoodImageView(
+                mealTitle: meal.title,
+                wikipediaQuery: meal.wikipediaSearchQuery,
+                fallbackUrl: meal.imageUrl
+            )
+            .frame(height: 220)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
+            .padding([.horizontal, .top], 16)
             
-            VStack(spacing: 8) {
-                Text(meal.title)
-                    .font(.title2.bold())
-                    .multilineTextAlignment(.center)
+            VStack(spacing: 16) {
+                VStack(spacing: 6) {
+                    Text(meal.title)
+                        .font(.title2.bold())
+                        .multilineTextAlignment(.center)
+                    
+                    Text(meal.location)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.top, 16)
                 
-                Text(meal.location)
-                    .font(.subheadline)
+                HStack(spacing: 12) {
+                    chip(label: meal.price, systemImage: "tag.fill")
+                    chip(label: meal.calories, systemImage: "flame.fill")
+                }
+                
+                Divider()
+                    .padding(.horizontal)
+                
+                Text(meal.description)
+                    .font(.body)
                     .foregroundStyle(.secondary)
+                    .lineSpacing(4)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                    .padding(.bottom, 24)
             }
-            
-            HStack(spacing: 12) {
-                chip(label: meal.price, systemImage: "tag.fill")
-                chip(label: meal.calories, systemImage: "flame.fill")
-            }
-            
-            Divider()
-                .padding(.horizontal)
-            
-            Text(meal.description)
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .lineSpacing(4)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-                .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity)
         .background(.background)
@@ -227,44 +214,40 @@ struct RecommendationView: View {
     
     @ViewBuilder
     private func alternativeCard(for meal: Meal, isSelected: Bool) -> some View {
-        VStack(spacing: 14) {
-            ZStack {
-                Circle()
-                    .fill(LinearGradient(
-                        colors: meal.swiftUIColors,
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    .frame(width: 60, height: 60)
-                
-                Image(systemName: meal.systemImage)
-                    .font(.system(size: 24))
-                    .foregroundStyle(.white)
-            }
+        VStack(spacing: 12) {
+            FoodImageView(
+                mealTitle: meal.title,
+                wikipediaQuery: meal.wikipediaSearchQuery,
+                fallbackUrl: meal.imageUrl
+            )
+            .frame(width: 70, height: 70)
+            .clipShape(Circle())
+            .overlay(Circle().stroke(isSelected ? Color.pink : Color.clear, lineWidth: 2))
+            .shadow(color: isSelected ? .pink.opacity(0.2) : .black.opacity(0.05), radius: 6, y: 3)
             
             VStack(spacing: 4) {
                 Text(meal.title)
-                    .font(.subheadline.bold())
-                    .foregroundStyle(.primary)
+                    .font(.caption.bold())
+                    .foregroundStyle(isSelected ? .pink : .primary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
-                    .frame(height: 38)
+                    .frame(height: 32)
                 
                 Text(meal.price)
-                    .font(.caption)
+                    .font(.caption2)
                     .bold()
                     .foregroundStyle(.pink)
             }
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(isSelected ? Color.pink.opacity(0.07) : Color(uiColor: .secondarySystemGroupedBackground))
+        .background(isSelected ? Color.pink.opacity(0.05) : Color(uiColor: .secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 18))
-        .overlay {
+        .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(isSelected ? .pink : .clear, lineWidth: 2)
-        }
-        .shadow(color: isSelected ? .pink.opacity(0.1) : .black.opacity(0.04), radius: 6, y: 3)
+                .stroke(isSelected ? Color.pink : Color.clear, lineWidth: 2)
+        )
+        .shadow(color: isSelected ? .pink.opacity(0.08) : .black.opacity(0.04), radius: 6, y: 3)
     }
     
     @ViewBuilder
