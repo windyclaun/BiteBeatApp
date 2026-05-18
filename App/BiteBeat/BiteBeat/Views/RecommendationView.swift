@@ -16,13 +16,40 @@ struct RecommendationView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                VStack(spacing: 4) {
-                    Text("Apple Intelligence Match")
-                        .font(.footnote)
-                        .foregroundStyle(.pink.gradient)
-                        .textCase(.uppercase)
-                        .tracking(1.5)
-                        .bold()
+                VStack(spacing: 6) {
+                    if AppleIntelligenceManager.shared.isAppleIntelligenceActive {
+                        HStack(spacing: 5) {
+                            Image(systemName: "apple.intelligence")
+                                .font(.caption.bold())
+                                .foregroundStyle(LinearGradient(
+                                    colors: [.blue, .purple, .pink, .orange],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ))
+                            Text("Apple Intelligence Match")
+                                .font(.caption.weight(.bold))
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(Color(uiColor: .secondarySystemGroupedBackground), in: Capsule())
+                        .overlay(
+                            Capsule()
+                                .stroke(LinearGradient(
+                                    colors: [.blue.opacity(0.3), .purple.opacity(0.3), .pink.opacity(0.3)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                ), lineWidth: 1)
+                        )
+                        .padding(.bottom, 4)
+                    } else {
+                        Text("Heuristic Standard Match")
+                            .font(.footnote)
+                            .foregroundStyle(.pink.gradient)
+                            .textCase(.uppercase)
+                            .tracking(1.5)
+                            .bold()
+                    }
                     
                     Text("Your Best Lunch Match")
                         .font(.title.bold())

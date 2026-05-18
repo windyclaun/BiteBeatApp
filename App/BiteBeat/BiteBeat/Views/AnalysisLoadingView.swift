@@ -15,6 +15,7 @@ struct AnalysisLoadingView: View {
     @State private var calculatedAlternatives: [Meal] = []
     
     @State private var navigateToRecommendation = false
+    @State private var neuralLogs: [String] = []
     
     var body: some View {
         NavigationStack {
@@ -24,7 +25,7 @@ struct AnalysisLoadingView: View {
                 ZStack {
                     Circle()
                         .fill(LinearGradient(
-                            colors: [.pink, .purple, .orange],
+                            colors: AppleIntelligenceManager.shared.isAppleIntelligenceActive ? [.blue, .purple, .pink, .orange] : [.pink, .purple, .orange],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ))
@@ -36,7 +37,7 @@ struct AnalysisLoadingView: View {
                     Circle()
                         .stroke(
                             LinearGradient(
-                                colors: [.pink, .purple, .orange, .pink],
+                                colors: AppleIntelligenceManager.shared.isAppleIntelligenceActive ? [.blue, .purple, .pink, .orange, .blue] : [.pink, .purple, .orange, .pink],
                                 startPoint: .top,
                                 endPoint: .bottom
                             ),
@@ -47,25 +48,31 @@ struct AnalysisLoadingView: View {
                     
                     Circle()
                         .fill(LinearGradient(
-                            colors: [.pink, .orange],
+                            colors: AppleIntelligenceManager.shared.isAppleIntelligenceActive ? [.blue, .purple] : [.pink, .orange],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ))
                         .frame(width: 80, height: 80)
                         .scaleEffect(pulseScale)
                         .overlay {
-                            Image(systemName: "sparkles")
+                            Image(systemName: AppleIntelligenceManager.shared.isAppleIntelligenceActive ? "apple.intelligence" : "sparkles")
                                 .font(.system(size: 32))
                                 .foregroundStyle(.white)
                                 .symbolEffect(.bounce, options: .repeating)
                         }
                 }
-                .padding(.bottom, 48)
+                .padding(.bottom, 24)
                 
                 VStack(spacing: 8) {
-                    Text("Apple Intelligence")
+                    Text(AppleIntelligenceManager.shared.isAppleIntelligenceActive ? "Apple Intelligence" : "Heuristic Analyzer")
                         .font(.headline)
-                        .foregroundStyle(.pink.gradient)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: AppleIntelligenceManager.shared.isAppleIntelligenceActive ? [.blue, .purple, .pink] : [.pink, .orange],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                         .textCase(.uppercase)
                         .tracking(2.0)
                     
@@ -77,6 +84,43 @@ struct AnalysisLoadingView: View {
                 }
                 .frame(height: 80)
                 .padding(.horizontal)
+                
+                if !neuralLogs.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(.green)
+                                .frame(width: 6, height: 6)
+                            Text("Apple Neural Engine Console:")
+                                .font(.system(.caption, design: .monospaced))
+                                .bold()
+                                .foregroundStyle(.pink.opacity(0.8))
+                        }
+                        .padding(.bottom, 2)
+                        
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 6) {
+                                ForEach(neuralLogs, id: \.self) { log in
+                                    Text(log)
+                                        .font(.system(size: 11, design: .monospaced))
+                                        .foregroundStyle(.primary.opacity(0.85))
+                                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .frame(height: 110)
+                    }
+                    .padding()
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(.quaternary, lineWidth: 1)
+                    )
+                    .padding(.horizontal, 24)
+                    .padding(.top, 16)
+                }
                 
                 Spacer()
                 
@@ -108,22 +152,52 @@ struct AnalysisLoadingView: View {
                     rotateDegree = 360.0
                 }
                 
-                await sleep(1.0)
-                loadingStatus = "Scanning 10 Recently Played Tracks…"
-                let analyzer = MusicToFoodAnalyzer()
-                let result = analyzer.analyze(songs: songsToAnalyze)
-                calculatedVibe = result.vibe
-                calculatedMain = result.mainMeal
-                calculatedAlternatives = result.alternatives
+                let isAIActive = AppleIntelligenceManager.shared.isAppleIntelligenceActive
                 
-                await sleep(1.0)
-                if let vibe = calculatedVibe {
-                    loadingStatus = "Matching your mood to \(vibe.rawValue)…"
+                if isAIActive {
+                    loadingStatus = "Menghubungkan ke Apple Intelligence..."
+                    await sleep(0.8)
+                    
+                    let analyzer = MusicToFoodAnalyzer()
+                    let result = await analyzer.analyzeWithAppleIntelligence(songs: songsToAnalyze)
+                    
+                    calculatedVibe = result.vibe
+                    calculatedMain = result.mainMeal
+                    calculatedAlternatives = result.alternatives
+                    
+                    for log in result.logs {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            neuralLogs.append(log)
+                        }
+                        loadingStatus = log.replacingOccurrences(of: "⚡️ ", with: "")
+                                           .replacingOccurrences(of: "🧠 ", with: "")
+                                           .replacingOccurrences(of: "📊 ", with: "")
+                                           .replacingOccurrences(of: "🔎 ", with: "")
+                                           .replacingOccurrences(of: "🎯 ", with: "")
+                                           .replacingOccurrences(of: "🍽️ ", with: "")
+                                           .replacingOccurrences(of: "[ANE] ", with: "")
+                                           .replacingOccurrences(of: "[Apple Intelligence] ", with: "")
+                        await sleep(0.65)
+                    }
+                    await sleep(0.5)
+                } else {
+                    await sleep(1.0)
+                    loadingStatus = "Scanning 10 Recently Played Tracks…"
+                    let analyzer = MusicToFoodAnalyzer()
+                    let result = analyzer.analyze(songs: songsToAnalyze)
+                    calculatedVibe = result.vibe
+                    calculatedMain = result.mainMeal
+                    calculatedAlternatives = result.alternatives
+                    
+                    await sleep(1.0)
+                    if let vibe = calculatedVibe {
+                        loadingStatus = "Matching your mood to \(vibe.rawValue)…"
+                    }
+                    
+                    await sleep(1.0)
+                    loadingStatus = "Assembling the perfect match!"
+                    await sleep(0.6)
                 }
-                
-                await sleep(1.0)
-                loadingStatus = "Assembling the perfect match!"
-                await sleep(0.6)
                 
                 navigateToRecommendation = true
             }

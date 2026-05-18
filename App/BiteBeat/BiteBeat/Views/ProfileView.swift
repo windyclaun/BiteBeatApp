@@ -9,6 +9,7 @@ struct ProfileView: View {
     @State private var dominantVibe: MusicVibe = .comfortingWarm
     @State private var isLoadingVibe = true
     @State private var storefrontCountry = "Loading…"
+    @State private var aiManager = AppleIntelligenceManager.shared
 
     var body: some View {
         List {
@@ -72,6 +73,53 @@ struct ProfileView: View {
                     }
                 }
                 .padding(.vertical, 6)
+            }
+            
+            Section("Apple Intelligence Settings") {
+                HStack(spacing: 12) {
+                    Image(systemName: "apple.intelligence")
+                        .font(.title3)
+                        .foregroundStyle(LinearGradient(
+                            colors: [.blue, .purple, .pink, .orange],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Apple Intelligence")
+                            .font(.body.bold())
+                        Text(aiManager.isAppleIntelligenceActive ? "Status: \(aiManager.activeModeName)" : "Status: Inactive")
+                            .font(.caption)
+                            .foregroundStyle(aiManager.isAppleIntelligenceActive ? .green : .secondary)
+                    }
+                }
+                
+                LabeledContent("Device Hardware") {
+                    Text(aiManager.deviceModelCode)
+                        .foregroundStyle(.secondary)
+                }
+                
+                LabeledContent("Hardware Supported") {
+                    if aiManager.isHardwareSupported {
+                        Text("Yes (iPhone 17+)")
+                            .foregroundStyle(.green)
+                            .bold()
+                    } else {
+                        Text("No (Requires iPhone 17+)")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
+                Toggle(isOn: $aiManager.isSimulationModeEnabled) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Simulate Apple Intelligence")
+                            .font(.body.weight(.semibold))
+                        Text("Force-enable ANE Local Model on older devices")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .tint(.pink)
             }
             
             Section("Apple Music Account") {

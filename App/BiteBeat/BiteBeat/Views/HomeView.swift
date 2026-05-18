@@ -26,21 +26,48 @@ struct HomeView: View {
                 .padding(.horizontal)
                 .padding(.top, 16)
                 
+                if AppleIntelligenceManager.shared.isAppleIntelligenceActive {
+                    HStack(spacing: 6) {
+                        Image(systemName: "apple.intelligence")
+                            .font(.caption.bold())
+                            .foregroundStyle(LinearGradient(
+                                colors: [.blue, .purple, .pink, .orange],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
+                        Text("POWERED BY APPLE INTELLIGENCE")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground), in: Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(LinearGradient(
+                                colors: [.blue.opacity(0.3), .purple.opacity(0.3), .pink.opacity(0.3)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ), lineWidth: 1)
+                    )
+                    .padding(.bottom, -16)
+                }
+                
                 Button {
                     showAnalysis = true
                 } label: {
                     VStack(spacing: 16) {
                         HStack(spacing: 12) {
-                            Image(systemName: "sparkles")
+                            Image(systemName: AppleIntelligenceManager.shared.isAppleIntelligenceActive ? "apple.intelligence" : "sparkles")
                                 .font(.title)
                                 .foregroundStyle(.white)
                                 .symbolEffect(.bounce, options: .repeating)
                             
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Analyze My Mood")
+                                Text(AppleIntelligenceManager.shared.isAppleIntelligenceActive ? "Analyze with ANE" : "Analyze My Mood")
                                     .font(.headline.weight(.bold))
                                     .foregroundStyle(.white)
-                                Text("Get Food Recommendation Now")
+                                Text(AppleIntelligenceManager.shared.isAppleIntelligenceActive ? "Menggunakan Apple Neural Engine Lokal" : "Get Food Recommendation Now")
                                     .font(.subheadline)
                                     .foregroundStyle(.white.opacity(0.85))
                             }
@@ -53,11 +80,11 @@ struct HomeView: View {
                         .background {
                             RoundedRectangle(cornerRadius: 20)
                                 .fill(LinearGradient(
-                                    colors: [.pink, .orange, .purple],
+                                    colors: AppleIntelligenceManager.shared.isAppleIntelligenceActive ? [.blue, .purple, .pink, .orange] : [.pink, .orange, .purple],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 ))
-                                .shadow(color: .pink.opacity(0.3), radius: 15, y: 8)
+                                .shadow(color: AppleIntelligenceManager.shared.isAppleIntelligenceActive ? .blue.opacity(0.3) : .pink.opacity(0.3), radius: 15, y: 8)
                         }
                     }
                 }
