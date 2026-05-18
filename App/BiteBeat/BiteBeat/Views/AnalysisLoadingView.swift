@@ -2,6 +2,11 @@ import BiteBeatMusic
 import MusicKit
 import SwiftUI
 
+struct ConsoleLog: Identifiable, Equatable {
+    let id = UUID()
+    let text: String
+}
+
 struct AnalysisLoadingView: View {
     let songsToAnalyze: [Song]
     
@@ -15,7 +20,7 @@ struct AnalysisLoadingView: View {
     @State private var calculatedAlternatives: [Meal] = []
     
     @State private var navigateToRecommendation = false
-    @State private var neuralLogs: [String] = []
+    @State private var neuralLogs: [ConsoleLog] = []
     
     var body: some View {
         NavigationStack {
@@ -100,8 +105,8 @@ struct AnalysisLoadingView: View {
                         
                         ScrollView {
                             VStack(alignment: .leading, spacing: 6) {
-                                ForEach(neuralLogs, id: \.self) { log in
-                                    Text(log)
+                                ForEach(neuralLogs) { log in
+                                    Text(log.text)
                                         .font(.system(size: 11, design: .monospaced))
                                         .foregroundStyle(.primary.opacity(0.85))
                                         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -167,7 +172,7 @@ struct AnalysisLoadingView: View {
                     
                     for log in result.logs {
                         withAnimation(.easeOut(duration: 0.3)) {
-                            neuralLogs.append(log)
+                            neuralLogs.append(ConsoleLog(text: log))
                         }
                         loadingStatus = log.replacingOccurrences(of: "⚡️ ", with: "")
                                            .replacingOccurrences(of: "🧠 ", with: "")
