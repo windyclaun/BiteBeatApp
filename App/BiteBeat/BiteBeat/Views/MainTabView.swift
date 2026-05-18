@@ -1,6 +1,6 @@
 //
 //  MainTabView.swift
-//  test_music_kit
+//  BiteBeat
 //
 
 import SwiftUI

@@ -1,6 +1,6 @@
 //
 //  MusicSessionManager.swift
-//  test_music_kit
+//  BiteBeatMusic
 //
 
 import MusicKit
@@ -8,40 +8,40 @@ import Observation
 
 @MainActor
 @Observable
-final class MusicSessionManager {
-    var authorizationStatus: MusicAuthorization.Status = .notDetermined
-    var musicSubscription: MusicSubscription?
+public final class MusicSessionManager {
+    public var authorizationStatus: MusicAuthorization.Status = .notDetermined
+    public var musicSubscription: MusicSubscription?
 
-    var isAuthorized: Bool {
+    public var isAuthorized: Bool {
         authorizationStatus == .authorized
     }
 
-    var canPlayCatalogContent: Bool {
+    public var canPlayCatalogContent: Bool {
         musicSubscription?.canPlayCatalogContent ?? false
     }
 
-    var canBecomeSubscriber: Bool {
+    public var canBecomeSubscriber: Bool {
         musicSubscription?.canBecomeSubscriber ?? false
     }
 
-    init() {
+    public init() {
         authorizationStatus = MusicAuthorization.currentStatus
     }
 
-    func refreshAuthorizationStatus() {
+    public func refreshAuthorizationStatus() {
         authorizationStatus = MusicAuthorization.currentStatus
     }
 
-    func refreshSubscription() async {
+    public func refreshSubscription() async {
         musicSubscription = try? await MusicSubscription.current
     }
 
-    func requestAuthorization() async {
+    public func requestAuthorization() async {
         let status = await MusicAuthorization.request()
         authorizationStatus = status
     }
 
-    func observeSubscriptionUpdates() async {
+    public func observeSubscriptionUpdates() async {
         await refreshSubscription()
         for await subscription in MusicSubscription.subscriptionUpdates {
             musicSubscription = subscription

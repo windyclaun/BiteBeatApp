@@ -1,8 +1,9 @@
 //
 //  AlbumDetailView.swift
-//  test_music_kit
+//  BiteBeat
 //
 
+import BiteBeatMusic
 import MusicKit
 import SwiftUI
 
@@ -116,7 +117,6 @@ struct AlbumDetailView: View {
     private func loadAlbumDetails() async {
         isLoading = true
         do {
-            // Loading relationships and associations (WWDC21 Meet MusicKit)
             let loaded = try await album.with([.artists, .tracks, .relatedAlbums])
             detailedAlbum = loaded
             tracks = loaded.tracks

@@ -1,8 +1,9 @@
 //
 //  SubscriptionOfferSheetButton.swift
-//  test_music_kit
+//  BiteBeat
 //
 
+import BiteBeatMusic
 import MusicKit
 import SwiftUI
 

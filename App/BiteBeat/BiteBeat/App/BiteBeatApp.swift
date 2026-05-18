@@ -2,7 +2,10 @@
 //  BiteBeatApp.swift
 //  BiteBeat
 //
+//  Created by Muhammad Hisyam Kamil on 18/05/26.
+//
 
+import BiteBeatMusic
 import SwiftUI
 
 @main

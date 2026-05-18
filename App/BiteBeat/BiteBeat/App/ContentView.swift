@@ -1,8 +1,11 @@
 //
 //  ContentView.swift
-//  test_music_kit
+//  BiteBeat
+//
+//  Created by Muhammad Hisyam Kamil on 18/05/26.
 //
 
+import BiteBeatMusic
 import SwiftUI
 
 struct ContentView: View {

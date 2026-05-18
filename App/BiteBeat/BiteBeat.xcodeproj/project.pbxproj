@@ -1,0 +1,610 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5A07A5E22FBB691300B1CDDC /* BiteBeatMusic in Frameworks */ = {isa = PBXBuildFile; productRef = 5A07A5E12FBB691300B1CDDC /* BiteBeatMusic */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5A07A5B82FBB660300B1CDDC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5A07A5A22FBB660100B1CDDC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5A07A5A92FBB660100B1CDDC;
+			remoteInfo = BiteBeat;
+		};
+		5A07A5C22FBB660300B1CDDC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5A07A5A22FBB660100B1CDDC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5A07A5A92FBB660100B1CDDC;
+			remoteInfo = BiteBeat;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		5A07A5AA2FBB660100B1CDDC /* BiteBeat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BiteBeat.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A07A5B72FBB660300B1CDDC /* BiteBeatTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BiteBeatTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A07A5C12FBB660300B1CDDC /* BiteBeatUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BiteBeatUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		5A07A5AC2FBB660100B1CDDC /* BiteBeat */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BiteBeat;
+			sourceTree = "<group>";
+		};
+		5A07A5BA2FBB660300B1CDDC /* BiteBeatTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BiteBeatTests;
+			sourceTree = "<group>";
+		};
+		5A07A5C42FBB660300B1CDDC /* BiteBeatUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BiteBeatUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5A07A5A72FBB660100B1CDDC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5A07A5E22FBB691300B1CDDC /* BiteBeatMusic in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A07A5B42FBB660300B1CDDC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A07A5BE2FBB660300B1CDDC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5A07A5A12FBB660100B1CDDC = {
+			isa = PBXGroup;
+			children = (
+				5A07A5AC2FBB660100B1CDDC /* BiteBeat */,
+				5A07A5BA2FBB660300B1CDDC /* BiteBeatTests */,
+				5A07A5C42FBB660300B1CDDC /* BiteBeatUITests */,
+				5A07A5AB2FBB660100B1CDDC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5A07A5AB2FBB660100B1CDDC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5A07A5AA2FBB660100B1CDDC /* BiteBeat.app */,
+				5A07A5B72FBB660300B1CDDC /* BiteBeatTests.xctest */,
+				5A07A5C12FBB660300B1CDDC /* BiteBeatUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5A07A5A92FBB660100B1CDDC /* BiteBeat */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A07A5CB2FBB660300B1CDDC /* Build configuration list for PBXNativeTarget "BiteBeat" */;
+			buildPhases = (
+				5A07A5A62FBB660100B1CDDC /* Sources */,
+				5A07A5A72FBB660100B1CDDC /* Frameworks */,
+				5A07A5A82FBB660100B1CDDC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5A07A5AC2FBB660100B1CDDC /* BiteBeat */,
+			);
+			name = BiteBeat;
+			packageProductDependencies = (
+				5A07A5E12FBB691300B1CDDC /* BiteBeatMusic */,
+			);
+			productName = BiteBeat;
+			productReference = 5A07A5AA2FBB660100B1CDDC /* BiteBeat.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5A07A5B62FBB660300B1CDDC /* BiteBeatTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A07A5CE2FBB660300B1CDDC /* Build configuration list for PBXNativeTarget "BiteBeatTests" */;
+			buildPhases = (
+				5A07A5B32FBB660300B1CDDC /* Sources */,
+				5A07A5B42FBB660300B1CDDC /* Frameworks */,
+				5A07A5B52FBB660300B1CDDC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5A07A5B92FBB660300B1CDDC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5A07A5BA2FBB660300B1CDDC /* BiteBeatTests */,
+			);
+			name = BiteBeatTests;
+			packageProductDependencies = (
+			);
+			productName = BiteBeatTests;
+			productReference = 5A07A5B72FBB660300B1CDDC /* BiteBeatTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		5A07A5C02FBB660300B1CDDC /* BiteBeatUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A07A5D12FBB660300B1CDDC /* Build configuration list for PBXNativeTarget "BiteBeatUITests" */;
+			buildPhases = (
+				5A07A5BD2FBB660300B1CDDC /* Sources */,
+				5A07A5BE2FBB660300B1CDDC /* Frameworks */,
+				5A07A5BF2FBB660300B1CDDC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5A07A5C32FBB660300B1CDDC /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				5A07A5C42FBB660300B1CDDC /* BiteBeatUITests */,
+			);
+			name = BiteBeatUITests;
+			packageProductDependencies = (
+			);
+			productName = BiteBeatUITests;
+			productReference = 5A07A5C12FBB660300B1CDDC /* BiteBeatUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5A07A5A22FBB660100B1CDDC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2650;
+				LastUpgradeCheck = 2650;
+				TargetAttributes = {
+					5A07A5A92FBB660100B1CDDC = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					5A07A5B62FBB660300B1CDDC = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = 5A07A5A92FBB660100B1CDDC;
+					};
+					5A07A5C02FBB660300B1CDDC = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = 5A07A5A92FBB660100B1CDDC;
+					};
+				};
+			};
+			buildConfigurationList = 5A07A5A52FBB660100B1CDDC /* Build configuration list for PBXProject "BiteBeat" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 5A07A5A12FBB660100B1CDDC;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5A07A5E02FBB691300B1CDDC /* XCLocalSwiftPackageReference "../../Packages/BiteBeatMusic" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 5A07A5AB2FBB660100B1CDDC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5A07A5A92FBB660100B1CDDC /* BiteBeat */,
+				5A07A5B62FBB660300B1CDDC /* BiteBeatTests */,
+				5A07A5C02FBB660300B1CDDC /* BiteBeatUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5A07A5A82FBB660100B1CDDC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A07A5B52FBB660300B1CDDC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A07A5BF2FBB660300B1CDDC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5A07A5A62FBB660100B1CDDC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A07A5B32FBB660300B1CDDC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A07A5BD2FBB660300B1CDDC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		5A07A5B92FBB660300B1CDDC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5A07A5A92FBB660100B1CDDC /* BiteBeat */;
+			targetProxy = 5A07A5B82FBB660300B1CDDC /* PBXContainerItemProxy */;
+		};
+		5A07A5C32FBB660300B1CDDC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5A07A5A92FBB660100B1CDDC /* BiteBeat */;
+			targetProxy = 5A07A5C22FBB660300B1CDDC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5A07A5C92FBB660300B1CDDC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = WP99VBV7FN;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		5A07A5CA2FBB660300B1CDDC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = WP99VBV7FN;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		5A07A5CC2FBB660300B1CDDC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WP99VBV7FN;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "BiteBeat needs access to your Apple Music account to browse your library, search catalog tracks, and play songs.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pucakgunung.BiteBeat;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5A07A5CD2FBB660300B1CDDC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WP99VBV7FN;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				INFOPLIST_KEY_NSAppleMusicUsageDescription = "BiteBeat needs access to your Apple Music account to browse your library, search catalog tracks, and play songs.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pucakgunung.BiteBeat;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5A07A5CF2FBB660300B1CDDC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WP99VBV7FN;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pucakgunung.BiteBeatTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BiteBeat.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BiteBeat";
+			};
+			name = Debug;
+		};
+		5A07A5D02FBB660300B1CDDC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WP99VBV7FN;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pucakgunung.BiteBeatTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BiteBeat.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BiteBeat";
+			};
+			name = Release;
+		};
+		5A07A5D22FBB660300B1CDDC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WP99VBV7FN;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pucakgunung.BiteBeatUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = BiteBeat;
+			};
+			name = Debug;
+		};
+		5A07A5D32FBB660300B1CDDC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WP99VBV7FN;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pucakgunung.BiteBeatUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = BiteBeat;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5A07A5A52FBB660100B1CDDC /* Build configuration list for PBXProject "BiteBeat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A07A5C92FBB660300B1CDDC /* Debug */,
+				5A07A5CA2FBB660300B1CDDC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5A07A5CB2FBB660300B1CDDC /* Build configuration list for PBXNativeTarget "BiteBeat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A07A5CC2FBB660300B1CDDC /* Debug */,
+				5A07A5CD2FBB660300B1CDDC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5A07A5CE2FBB660300B1CDDC /* Build configuration list for PBXNativeTarget "BiteBeatTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A07A5CF2FBB660300B1CDDC /* Debug */,
+				5A07A5D02FBB660300B1CDDC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5A07A5D12FBB660300B1CDDC /* Build configuration list for PBXNativeTarget "BiteBeatUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A07A5D22FBB660300B1CDDC /* Debug */,
+				5A07A5D32FBB660300B1CDDC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		5A07A5E02FBB691300B1CDDC /* XCLocalSwiftPackageReference "../../Packages/BiteBeatMusic" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../Packages/BiteBeatMusic;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5A07A5E12FBB691300B1CDDC /* BiteBeatMusic */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BiteBeatMusic;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 5A07A5A22FBB660100B1CDDC /* Project object */;
+}

@@ -1,6 +1,6 @@
 //
 //  GenresView.swift
-//  test_music_kit
+//  BiteBeat
 //
 
 import MusicKit
