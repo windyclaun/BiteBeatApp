@@ -33,7 +33,11 @@ public final class MusicSessionManager {
     }
 
     public func refreshSubscription() async {
+        #if !targetEnvironment(simulator)
         musicSubscription = try? await MusicSubscription.current
+        #else
+        musicSubscription = nil
+        #endif
     }
 
     public func requestAuthorization() async {
@@ -42,9 +46,11 @@ public final class MusicSessionManager {
     }
 
     public func observeSubscriptionUpdates() async {
+        #if !targetEnvironment(simulator)
         await refreshSubscription()
         for await subscription in MusicSubscription.subscriptionUpdates {
             musicSubscription = subscription
         }
+        #endif
     }
 }

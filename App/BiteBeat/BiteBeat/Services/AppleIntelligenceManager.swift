@@ -11,17 +11,7 @@ import Observation
 public final class AppleIntelligenceManager: @unchecked Sendable {
     public static let shared = AppleIntelligenceManager()
     
-    // Mode simulasi Apple Intelligence diatur via ProfileView
-    public var isSimulationModeEnabled: Bool {
-        didSet {
-            UserDefaults.standard.set(isSimulationModeEnabled, forKey: "bb_apple_intelligence_simulation")
-            NotificationCenter.default.post(name: NSNotification.Name("AppleIntelligenceStateChanged"), object: nil)
-        }
-    }
-    
-    private init() {
-        self.isSimulationModeEnabled = UserDefaults.standard.bool(forKey: "bb_apple_intelligence_simulation")
-    }
+    private init() {}
     
     // Mengidentifikasi kode model perangkat fisik (misal: iPhone18,1)
     public var deviceModelCode: String {
@@ -58,16 +48,14 @@ public final class AppleIntelligenceManager: @unchecked Sendable {
         return false
     }
     
-    // Aktif jika perangkat mendukung secara hardware ATAU simulasi diaktifkan
+    // Aktif jika perangkat mendukung secara hardware
     public var isAppleIntelligenceActive: Bool {
-        return isHardwareSupported || isSimulationModeEnabled
+        return isHardwareSupported
     }
     
     public var activeModeName: String {
         if isHardwareSupported {
             return "Apple Intelligence (Local ANE Model)"
-        } else if isSimulationModeEnabled {
-            return "Apple Intelligence (ANE Simulated Mode)"
         } else {
             return "Heuristic Standard Mode"
         }

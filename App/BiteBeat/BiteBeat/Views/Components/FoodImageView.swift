@@ -5,12 +5,40 @@ public final class FoodImageService {
     
     private init() {}
     
-    // Query Wikipedia/Wikimedia API secara asinkron tanpa api key
+    // Query Wikipedia Search API + Page Image API to guarantee finding an authentic image
     public func fetchImage(for query: String) async -> String? {
-        let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
-        let urlString = "https://id.wikipedia.org/w/api.php?action=query&titles=\(encodedQuery)&prop=pageimages&format=json&pithumbsize=600"
+        // Step 1: Search Wikipedia for the best matching article
+        guard let encodedSearch = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return nil }
+        let searchUrlString = "https://id.wikipedia.org/w/api.php?action=query&list=search&srsearch=\(encodedSearch)&format=json&srlimit=1"
         
-        guard let url = URL(string: urlString) else { return nil }
+        guard let searchUrl = URL(string: searchUrlString) else { return nil }
+        
+        var resolvedTitle = query
+        do {
+            let (searchData, _) = try await URLSession.shared.data(from: searchUrl)
+            struct WikiSearchResult: Decodable {
+                struct QueryResult: Decodable {
+                    struct SearchItem: Decodable {
+                        let title: String
+                    }
+                    let search: [SearchItem]
+                }
+                let query: QueryResult
+            }
+            
+            let response = try JSONDecoder().decode(WikiSearchResult.self, from: searchData)
+            if let bestTitle = response.query.search.first?.title {
+                resolvedTitle = bestTitle
+            }
+        } catch {
+            print("Gagal mencari artikel di Wikipedia: \(error)")
+        }
+        
+        // Step 2: Fetch the page image for the resolved article title
+        guard let encodedQuery = resolvedTitle.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return nil }
+        let imageUrlString = "https://id.wikipedia.org/w/api.php?action=query&titles=\(encodedQuery)&prop=pageimages&format=json&pithumbsize=600"
+        
+        guard let url = URL(string: imageUrlString) else { return nil }
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)

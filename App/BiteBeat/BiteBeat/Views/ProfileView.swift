@@ -109,17 +109,6 @@ struct ProfileView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                
-                Toggle(isOn: $aiManager.isSimulationModeEnabled) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Simulate Apple Intelligence")
-                            .font(.body.weight(.semibold))
-                        Text("Force-enable ANE Local Model on older devices")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .tint(.pink)
             }
             
             Section("Apple Music Account") {
@@ -214,7 +203,7 @@ struct ProfileView: View {
             }
             
             let analyzer = MusicToFoodAnalyzer()
-            let result = analyzer.analyze(songs: recentSongs)
+            let result = await analyzer.analyze(songs: recentSongs)
             dominantVibe = result.vibe
         } catch {
             dominantVibe = .comfortingWarm

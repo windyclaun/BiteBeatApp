@@ -189,7 +189,7 @@ struct AnalysisLoadingView: View {
                     await sleep(1.0)
                     loadingStatus = "Scanning 10 Recently Played Tracks…"
                     let analyzer = MusicToFoodAnalyzer()
-                    let result = analyzer.analyze(songs: songsToAnalyze)
+                    let result = await analyzer.analyze(songs: songsToAnalyze)
                     calculatedVibe = result.vibe
                     calculatedMain = result.mainMeal
                     calculatedAlternatives = result.alternatives
