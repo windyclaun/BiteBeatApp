@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  BiteBeat
-//
-//  Created by Muhammad Hisyam Kamil on 18/05/26.
-//
-
 import BiteBeatMusic
 import SwiftUI
 
@@ -14,7 +7,9 @@ struct ContentView: View {
     var body: some View {
         Group {
             if musicSession.isAuthorized {
-                MainTabView()
+                NavigationStack {
+                    HomeView()
+                }
             } else {
                 AuthorizationView()
             }

@@ -1,8 +1,3 @@
-//
-//  AuthorizationView.swift
-//  BiteBeat
-//
-
 import BiteBeatMusic
 import MusicKit
 import SwiftUI
@@ -22,7 +17,7 @@ struct AuthorizationView: View {
                 Text("Apple Music")
                     .font(.largeTitle.bold())
 
-                Text("Connect your Apple Music account to browse your playlists, search the catalog, and play music.")
+                Text("Connect your Apple Music account to translate your recently played beats into personalized meal recommendations.")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
