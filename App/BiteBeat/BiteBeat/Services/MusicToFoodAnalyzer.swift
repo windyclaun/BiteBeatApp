@@ -98,7 +98,7 @@ public final class MusicToFoodAnalyzer: Sendable {
         Songs:
         \(songsList)
 
-        Respond EXACTLY in this JSON format without any markdown blocks or extra text:
+        Respond EXACTLY in this JSON format without any markdown blocks or extra text, providing exactly 1 main meal and exactly 2 alternative meals:
         {
           "vibeName": "Short vibe name (e.g. Vibrant & Spicy)",
           "vibeDescription": "A short personalized explanation of why their music matches this vibe and food.",
@@ -120,6 +120,15 @@ public final class MusicToFoodAnalyzer: Sendable {
               "description": "Appetizing description",
               "systemImage": "leaf.fill",
               "gradientColors": ["green", "teal"]
+            },
+            {
+              "title": "Dish name 3",
+              "price": "Rp 15.000",
+              "location": "Dummy restaurant 3",
+              "calories": "400 kcal",
+              "description": "Appetizing description",
+              "systemImage": "star.fill",
+              "gradientColors": ["purple", "pink"]
             }
           ]
         }
