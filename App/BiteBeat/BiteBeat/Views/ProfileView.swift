@@ -154,10 +154,15 @@ struct ProfileView: View {
                 recentSongs = dummySongs
             }
             
-            let analyzer = MusicToFoodAnalyzer()
-            let result = try await analyzer.analyze(songs: recentSongs)
-            dominantVibeName = result.vibeName
-            dominantVibeDescription = result.vibeDescription
+            if #available(iOS 26.0, *) {
+                let analyzer = MusicToFoodAnalyzer()
+                let result = try await analyzer.analyze(songs: recentSongs)
+                dominantVibeName = result.vibeName
+                dominantVibeDescription = result.vibeDescription
+            } else {
+                dominantVibeName = "Classic Mix"
+                dominantVibeDescription = "Apple Intelligence requires iOS 26.0 or newer."
+            }
         } catch {
             dominantVibeName = "Classic Mix"
             dominantVibeDescription = "Failed to load Apple Intelligence insights: \(error.localizedDescription)"

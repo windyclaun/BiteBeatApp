@@ -84,7 +84,7 @@ fileprivate struct AIMeal: Codable {
     let gradientColors: [String]
 }
 
-// Logic utama pemetaan musik ke makanan
+@available(iOS 26.0, *)
 public final class MusicToFoodAnalyzer: Sendable {
     
     public init() {}

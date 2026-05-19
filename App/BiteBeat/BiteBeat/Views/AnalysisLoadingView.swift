@@ -111,16 +111,23 @@ struct AnalysisLoadingView: View {
                 
                 await sleep(1.0)
                 loadingStatus = "Scanning 10 Recently Played Tracks…"
-                let analyzer = MusicToFoodAnalyzer()
-                do {
-                    let result = try await analyzer.analyze(songs: songsToAnalyze)
-                    calculatedVibeName = result.vibeName
-                    calculatedVibeDescription = result.vibeDescription
-                    calculatedMain = result.mainMeal
-                    calculatedAlternatives = result.alternatives
-                } catch {
-                    calculatedVibeName = "Error Analyzing"
-                    calculatedVibeDescription = "Failed to load from Apple Intelligence: \(error.localizedDescription)"
+                if #available(iOS 26.0, *) {
+                    let analyzer = MusicToFoodAnalyzer()
+                    do {
+                        let result = try await analyzer.analyze(songs: songsToAnalyze)
+                        calculatedVibeName = result.vibeName
+                        calculatedVibeDescription = result.vibeDescription
+                        calculatedMain = result.mainMeal
+                        calculatedAlternatives = result.alternatives
+                    } catch {
+                        calculatedVibeName = "Error Analyzing"
+                        calculatedVibeDescription = "Failed to load from Apple Intelligence: \(error.localizedDescription)"
+                        calculatedMain = Meal(title: "Fallback Nasi Goreng", price: "Rp 25.000", location: "Warung Depan", calories: "500 kcal", description: "Default fallback food when AI is not available.", systemImage: "flame.fill", gradientColors: ["orange", "red"])
+                        calculatedAlternatives = []
+                    }
+                } else {
+                    calculatedVibeName = "Classic Mix"
+                    calculatedVibeDescription = "Apple Intelligence requires iOS 26.0 or newer."
                     calculatedMain = Meal(title: "Fallback Nasi Goreng", price: "Rp 25.000", location: "Warung Depan", calories: "500 kcal", description: "Default fallback food when AI is not available.", systemImage: "flame.fill", gradientColors: ["orange", "red"])
                     calculatedAlternatives = []
                 }
