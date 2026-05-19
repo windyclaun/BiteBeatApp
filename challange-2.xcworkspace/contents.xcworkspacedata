@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:App/BiteBeatAdmin/BiteBeatAdmin.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:App/BiteBeat/BiteBeat.xcodeproj">
    </FileRef>
 </Workspace>

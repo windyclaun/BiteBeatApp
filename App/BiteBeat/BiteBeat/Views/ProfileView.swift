@@ -6,7 +6,8 @@ import SwiftUI
 struct ProfileView: View {
     @Environment(MusicSessionManager.self) private var musicSession
     @State private var recentSongs: [Song] = []
-    @State private var dominantVibe: MusicVibe = .comfortingWarm
+    @State private var dominantVibeName: String = "Loading..."
+    @State private var dominantVibeDescription: String = "Loading..."
     @State private var isLoadingVibe = true
     @State private var storefrontCountry = "Loading…"
     
@@ -73,11 +74,11 @@ struct ProfileView: View {
                         }
                         .padding(.vertical, 8)
                     } else {
-                        Text(dominantVibe.rawValue)
+                        Text(dominantVibeName)
                             .font(.title3.bold())
                             .foregroundStyle(.pink.gradient)
                         
-                        Text(vibeDescription(for: dominantVibe))
+                        Text(dominantVibeDescription)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                             .lineLimit(nil)
@@ -123,20 +124,7 @@ struct ProfileView: View {
         }
     }
     
-    private func vibeDescription(for vibe: MusicVibe) -> String {
-        switch vibe {
-        case .vibrantSpicy:
-            return "Your playlist is loaded with hot beats and pop grooves! Apple Intelligence says you need bold spices, energy-boosting meals, and fun tacos to fuel your day."
-        case .comfortingWarm:
-            return "Smooth jazz, lo-fi beats, and warm vocals fill your queue. Cozy pasta, warm soups, and comforting local classics will match your relaxing vibe."
-        case .indulgentSweet:
-            return "You appreciate emotional depth, acoustic strings, and sweet ballads. Treat yourself to rich waffles, sweet acai bowls, or pancakes to feed your soul."
-        case .cleanFresh:
-            return "Your playlist leans classical, clean, and focus-inducing. A fresh, healthy poke bowl or superfood quinoa salad is the perfect mindful pairing."
-        case .boldHearty:
-            return "Heavy riffs, fast tempos, and bold rock/metal tracks dominate your player. Go big with a double cheeseburger, pepperoni pizza, or BBQ ribs today!"
-        }
-    }
+    
     
     private func fetchRecentSongsAndAnalyze() async {
         isLoadingVibe = true
@@ -167,10 +155,12 @@ struct ProfileView: View {
             }
             
             let analyzer = MusicToFoodAnalyzer()
-            let result = analyzer.analyze(songs: recentSongs)
-            dominantVibe = result.vibe
+            let result = try await analyzer.analyze(songs: recentSongs)
+            dominantVibeName = result.vibeName
+            dominantVibeDescription = result.vibeDescription
         } catch {
-            dominantVibe = .comfortingWarm
+            dominantVibeName = "Classic Mix"
+            dominantVibeDescription = "Failed to load Apple Intelligence insights: \(error.localizedDescription)"
         }
         isLoadingVibe = false
     }

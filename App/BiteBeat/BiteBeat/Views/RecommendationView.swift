@@ -2,7 +2,7 @@ import BiteBeatMusic
 import SwiftUI
 
 struct RecommendationView: View {
-    let vibe: MusicVibe
+    let vibeName: String
     let mainMeal: Meal
     let alternatives: [Meal]
     
@@ -268,7 +268,7 @@ struct RecommendationView: View {
 
 #Preview {
     RecommendationView(
-        vibe: .vibrantSpicy,
+        vibeName: "Vibrant & Spicy",
         mainMeal: Meal(
             title: "Nasi Uduk Ayam Goreng",
             price: "Rp 25.000",

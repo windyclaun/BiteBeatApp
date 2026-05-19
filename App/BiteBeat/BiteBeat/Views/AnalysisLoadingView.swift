@@ -10,7 +10,8 @@ struct AnalysisLoadingView: View {
     @State private var pulseScale: CGFloat = 0.85
     @State private var rotateDegree = 0.0
     @State private var loadingStatus = "Accessing Apple Music History…"
-    @State private var calculatedVibe: MusicVibe?
+    @State private var calculatedVibeName: String?
+    @State private var calculatedVibeDescription: String?
     @State private var calculatedMain: Meal?
     @State private var calculatedAlternatives: [Meal] = []
     
@@ -81,9 +82,9 @@ struct AnalysisLoadingView: View {
                 Spacer()
                 
                 .navigationDestination(isPresented: $navigateToRecommendation) {
-                    if let vibe = calculatedVibe, let main = calculatedMain {
+                    if let vibeName = calculatedVibeName, let main = calculatedMain {
                         RecommendationView(
-                            vibe: vibe,
+                            vibeName: vibeName,
                             mainMeal: main,
                             alternatives: calculatedAlternatives
                         )
@@ -111,14 +112,22 @@ struct AnalysisLoadingView: View {
                 await sleep(1.0)
                 loadingStatus = "Scanning 10 Recently Played Tracks…"
                 let analyzer = MusicToFoodAnalyzer()
-                let result = analyzer.analyze(songs: songsToAnalyze)
-                calculatedVibe = result.vibe
-                calculatedMain = result.mainMeal
-                calculatedAlternatives = result.alternatives
+                do {
+                    let result = try await analyzer.analyze(songs: songsToAnalyze)
+                    calculatedVibeName = result.vibeName
+                    calculatedVibeDescription = result.vibeDescription
+                    calculatedMain = result.mainMeal
+                    calculatedAlternatives = result.alternatives
+                } catch {
+                    calculatedVibeName = "Error Analyzing"
+                    calculatedVibeDescription = "Failed to load from Apple Intelligence: \(error.localizedDescription)"
+                    calculatedMain = Meal(title: "Fallback Nasi Goreng", price: "Rp 25.000", location: "Warung Depan", calories: "500 kcal", description: "Default fallback food when AI is not available.", systemImage: "flame.fill", gradientColors: ["orange", "red"])
+                    calculatedAlternatives = []
+                }
                 
                 await sleep(1.0)
-                if let vibe = calculatedVibe {
-                    loadingStatus = "Matching your mood to \(vibe.rawValue)…"
+                if let vibe = calculatedVibeName {
+                    loadingStatus = "Matching your mood to \(vibe)…"
                 }
                 
                 await sleep(1.0)
