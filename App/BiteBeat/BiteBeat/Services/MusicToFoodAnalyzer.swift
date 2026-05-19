@@ -84,19 +84,54 @@ fileprivate struct AIMeal: Codable {
     let gradientColors: [String]
 }
 
+public enum AnalyzerLanguage: String, Sendable {
+    case indonesian = "Indonesian"
+    case english = "English"
+}
+
+public enum AnalyzerMode: Sendable {
+    case creative
+    case database(jsonString: String)
+}
+
 @available(iOS 26.0, *)
 public final class MusicToFoodAnalyzer: Sendable {
+    public let language: AnalyzerLanguage
+    public let mode: AnalyzerMode
     
-    public init() {}
+    public init(language: AnalyzerLanguage = .english, mode: AnalyzerMode = .creative) {
+        self.language = language
+        self.mode = mode
+    }
     
     // Fungsi utama buat nerjemahin list lagu ke vibe makanan (dapat menu utama & 2 alternatif)
     public func analyze(songs: [Song]) async throws -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) {
         let songsList = songs.isEmpty ? "No recent songs, default to soft and calming music." : songs.map { "- \($0.title) by \($0.artistName)" }.joined(separator: "\n")
         
-        let promptText = """
-        You are a food and music expert. Analyze these recently played songs and recommend 3 Indonesian food dishes (1 main, 2 alternatives).
+        var promptText = """
+        You are a food and music expert. Analyze these recently played songs and recommend 3 food dishes (1 main, 2 alternatives).
+        The output (vibeName, vibeDescription, title, and description) MUST be in \(language.rawValue) language.
+        
         Songs:
         \(songsList)
+        """
+        
+        switch mode {
+        case .creative:
+            promptText += "\n\nYou are free to recommend any suitable Indonesian food."
+        case .database(let jsonString):
+            promptText += """
+            
+            
+            CRITICAL INSTRUCTION: You MUST ONLY select the 3 food dishes from the following JSON database. Do not invent new foods.
+            If the selected food has a 'calories' value in the database, use it exactly. If it does NOT have a 'calories' value (or is missing), you must carefully estimate the calories yourself (e.g. "500 kcal").
+            Database:
+            \(jsonString)
+            """
+        }
+        
+        promptText += """
+        
 
         Respond EXACTLY in this JSON format without any markdown blocks or extra text, providing exactly 1 main meal and exactly 2 alternative meals:
         {

@@ -112,7 +112,20 @@ struct AnalysisLoadingView: View {
                 await sleep(1.0)
                 loadingStatus = "Scanning 10 Recently Played Tracks…"
                 if #available(iOS 26.0, *) {
-                    let analyzer = MusicToFoodAnalyzer()
+                    // Coba baca file foods.json dari project
+                    var databaseJson = "[]"
+                    if let url = Bundle.main.url(forResource: "foods", withExtension: "json"),
+                       let data = try? Data(contentsOf: url),
+                       let string = String(data: data, encoding: .utf8) {
+                        databaseJson = string
+                    }
+                    
+                    // Gunakan konfigurasi baru: Bahasa Indonesia dan Mode Database
+                    let analyzer = MusicToFoodAnalyzer(
+                        language: .indonesian,
+                        mode: .database(jsonString: databaseJson)
+                    )
+                    
                     do {
                         let result = try await analyzer.analyze(songs: songsToAnalyze)
                         calculatedVibeName = result.vibeName
