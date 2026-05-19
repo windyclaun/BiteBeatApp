@@ -9,6 +9,19 @@ struct ProfileView: View {
     @State private var dominantVibe: MusicVibe = .comfortingWarm
     @State private var isLoadingVibe = true
     @State private var storefrontCountry = "Loading…"
+    
+    private static let countries: [String: String] = [
+        "id": "Indonesia 🇮🇩",
+        "us": "United States 🇺🇸",
+        "gb": "United Kingdom 🇬🇧",
+        "sg": "Singapore 🇸🇬",
+        "my": "Malaysia 🇲🇾",
+        "jp": "Japan 🇯🇵",
+        "au": "Australia 🇦🇺",
+        "ca": "Canada 🇨🇦",
+        "de": "Germany 🇩🇪",
+        "fr": "France 🇫🇷"
+    ]
 
     var body: some View {
         List {
@@ -138,19 +151,7 @@ struct ProfileView: View {
         
         if let code = countryCode {
             let cleanCode = code.lowercased()
-            let countries = [
-                "id": "Indonesia 🇮🇩",
-                "us": "United States 🇺🇸",
-                "gb": "United Kingdom 🇬🇧",
-                "sg": "Singapore 🇸🇬",
-                "my": "Malaysia 🇲🇾",
-                "jp": "Japan 🇯🇵",
-                "au": "Australia 🇦🇺",
-                "ca": "Canada 🇨🇦",
-                "de": "Germany 🇩🇪",
-                "fr": "France 🇫🇷"
-            ]
-            storefrontCountry = countries[cleanCode] ?? cleanCode.uppercased()
+            storefrontCountry = Self.countries[cleanCode] ?? cleanCode.uppercased()
         } else {
             storefrontCountry = "Not Available"
         }
