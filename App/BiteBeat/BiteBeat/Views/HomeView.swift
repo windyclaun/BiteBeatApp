@@ -1,240 +1,175 @@
-import BiteBeatMusic
-import MusicKit
 import SwiftUI
+import MusicKit
 
 struct HomeView: View {
-    @Environment(MusicSessionManager.self) private var musicSession
+    @State private var isExpanded = false
+    @State private var navigateToLoading = false
     
-    @State private var recentSongs: [Song] = []
-    @State private var isLoadingSongs = true
-    @State private var showAnalysis = false
+    @State private var dummySongs: [Song] = []
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 28) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("What's the vibe for lunch?")
-                        .font(.largeTitle.bold())
-                        .foregroundStyle(.primary)
-                    
-                    Text("BiteBeat translates your recent musical taste into personalized nearby lunch recommendations. No decisions, just beats and eats.")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                        .lineSpacing(4)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-                .padding(.top, 16)
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                Color(uiColor: .systemGroupedBackground)
+                    .ignoresSafeArea()
                 
-                Button {
-                    showAnalysis = true
-                } label: {
-                    VStack(spacing: 16) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "sparkles")
-                                .font(.title)
-                                .foregroundStyle(.white)
-                                .symbolEffect(.bounce, options: .repeating)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Analyze My Mood")
-                                    .font(.headline.weight(.bold))
-                                    .foregroundStyle(.white)
-                                Text("Get Food Recommendation Now")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.white.opacity(0.85))
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(.white)
-                        }
-                        .padding()
-                        .background {
-                            RoundedRectangle(cornerRadius: 20)
-                                .fill(LinearGradient(
-                                    colors: [.pink, .orange, .purple],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ))
-                                .shadow(color: .pink.opacity(0.3), radius: 15, y: 8)
-                        }
-                    }
-                }
-                .buttonStyle(ScaleButtonStyle())
-                .padding(.horizontal)
-                
-                VStack(alignment: .leading, spacing: 14) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "music.note")
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header Area
+                    HStack {
+                        Text("BiteBeat")
+                            .font(.system(.title, design: .rounded))
+                            .bold()
                             .foregroundStyle(.pink)
-                        Text("Recently Played Vibes")
-                            .font(.headline.weight(.semibold))
-                        
-                        Button {
-                            Task {
-                                await fetchRecentlyPlayed()
-                            }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.subheadline.bold())
-                                .foregroundStyle(.pink)
-                                .symbolEffect(.bounce, value: isLoadingSongs)
-                        }
-                        .disabled(isLoadingSongs)
                         
                         Spacer()
-                        if recentSongs.isEmpty && !isLoadingSongs {
-                            Text("Demo Fallback")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(.quaternary, in: Capsule())
+                        
+                        NavigationLink(destination: ProfileView()) {
+                            Image(systemName: "person.circle.fill")
+                                .resizable()
+                                .frame(width: 32, height: 32)
+                                .foregroundStyle(.pink)
+                                .padding(4)
+                                .background(.background, in: Circle())
+                                .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 16)
                     
-                    if isLoadingSongs {
-                        HStack {
-                            Spacer()
-                            ProgressView()
-                            Spacer()
-                        }
-                        .padding(.vertical, 30)
-                    } else {
-                        VStack(spacing: 12) {
-                            ForEach(displaySongs.prefix(3), id: \.id) { song in
-                                HStack(spacing: 14) {
-                                    ArtworkImage(artwork: song.artwork, size: 52)
-                                    
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(song.title)
-                                            .font(.body.weight(.medium))
-                                            .lineLimit(1)
-                                        Text(song.artistName)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                            .lineLimit(1)
-                                    }
-                                    Spacer()
+                    Text("Recently Played")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 24)
+                    
+                    if !isExpanded {
+                        //Tumpukan Kartu
+                        cardStackView
+                            .onTapGesture {
+                                withAnimation(.spring(response: 0.5, dampingFraction: 0.72, blendDuration: 0)) {
+                                    isExpanded = true
                                 }
-                                .padding()
-                                .background(.background)
-                                .clipShape(RoundedRectangle(cornerRadius: 14))
-                                .shadow(color: .black.opacity(0.04), radius: 6, y: 3)
                             }
+                            .padding(.horizontal, 24)
+                        
+                        Spacer()
+                    } else {
+                        //Daftar yang bisa di-scroll
+                        ScrollView(.vertical, showsIndicators: false) {
+                            VStack(spacing: 16) {
+                                ForEach(dummySongs) { song in
+                                    SongRow(song: song)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(Color(uiColor: .secondarySystemGroupedBackground))
+                                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                        .padding(.horizontal, 24)
+                                }
+                                
+                                Button {
+                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+                                        isExpanded = false
+                                    }
+                                } label: {
+                                    Text("Collapse Stack")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                        .padding()
+                                }
+                                
+                                Color.clear.frame(height: 120)
+                            }
+                            .padding(.top, 4)
                         }
-                        .padding(.horizontal)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
                 }
+                
+                analyzeMoodButton
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
+            }
+            .navigationDestination(isPresented: $navigateToLoading) {
+                AnalysisLoadingView(songsToAnalyze: dummySongs)
+            }
+            .onAppear {
+                // Memuat lagu tiruan/asli saat halaman muncul
+                // Jika DummyData.songs kamu masih bertipe [DummySong], kita bisa pakai array kosong dulu atau memuat catalog asli
+//                 dummySongs = DummyData.songs
             }
         }
-        .refreshable {
-            await fetchRecentlyPlayed()
+    }
+    
+    private var cardStackView: some View {
+        ZStack {
+            if dummySongs.count > 2 {
+                SongRow(song: dummySongs[2])
+                    .padding()
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .scaleEffect(0.90)
+                    .offset(y: -24)
+                    .opacity(0.4)
+            }
+            
+            if dummySongs.count > 1 {
+                SongRow(song: dummySongs[1])
+                    .padding()
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .scaleEffect(0.95)
+                    .offset(y: -12)
+                    .opacity(0.7)
+            }
+            
+            if let topSong = dummySongs.first {
+                SongRow(song: topSong)
+                    .padding()
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
+            } else {
+                // Placeholder seandainya data lagu kosong saat awal loading
+                ContentUnavailableView("No Songs Found", systemImage: "music.note", description: Text("Please connect your Apple Music."))
+                    .frame(height: 90)
+                    .background(Color(uiColor: .secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
         }
-        .background(Color(uiColor: .systemGroupedBackground))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                HStack(spacing: 6) {
-                    Image(systemName: "music.note.house.fill")
-                        .foregroundStyle(.pink)
-                    Text("BiteBeat")
-                        .font(.headline.weight(.heavy))
-                        .foregroundStyle(.pink.gradient)
+        .padding(.top, 24)
+    }
+    
+    private var analyzeMoodButton: some View {
+        Button {
+            navigateToLoading = true
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Analyze My Mood")
+                        .font(.headline)
+                        .bold()
+                    Text("Get food recommendation now !")
+                        .font(.caption)
+                        .opacity(0.9)
                 }
+                .foregroundStyle(.white)
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.title3.bold())
+                    .foregroundStyle(.white)
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(destination: ProfileView()) {
-                    Image(systemName: "person.crop.circle")
-                        .font(.title3)
-                        .foregroundStyle(.pink)
-                }
-            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 20)
+            .background(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(Color.pink)
+            )
+            .shadow(color: .pink.opacity(0.3), radius: 10, y: 6)
         }
-        .fullScreenCover(isPresented: $showAnalysis) {
-            AnalysisLoadingView(songsToAnalyze: displaySongs)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetHome"))) { _ in
-            showAnalysis = false
-        }
-        .task {
-            await fetchRecentlyPlayed()
-        }
-    }
-    
-    private var displaySongs: [Song] {
-        recentSongs.isEmpty ? mockSongs : recentSongs
-    }
-    
-    private func fetchRecentlyPlayed() async {
-        isLoadingSongs = true
-        do {
-            var request = MusicRecentlyPlayedRequest<Song>()
-            request.limit = 10
-            let response = try await request.response()
-            recentSongs = Array(response.items)
-        } catch {
-            recentSongs = []
-        }
-        isLoadingSongs = false
-    }
-    
-    private var mockSongs: [Song] {
-        let json = """
-        [
-          {
-            "id": "1",
-            "type": "songs",
-            "attributes": {
-              "name": "Spicy Volcano Groove",
-              "artistName": "The Beat Bakers",
-              "durationInMillis": 180000,
-              "genreNames": ["Pop", "Dance"]
-            }
-          },
-          {
-            "id": "2",
-            "type": "songs",
-            "attributes": {
-              "name": "Midnight Carbonara Riffs",
-              "artistName": "Truffle Collective",
-              "durationInMillis": 240000,
-              "genreNames": ["Jazz", "Soul"]
-            }
-          },
-          {
-            "id": "3",
-            "type": "songs",
-            "attributes": {
-              "name": "Sweet Berry Acai Ballad",
-              "artistName": "Indie Acoustic Dream",
-              "durationInMillis": 200000,
-              "genreNames": ["Alternative", "Acoustic"]
-            }
-          }
-        ]
-        """
-        if let data = json.data(using: .utf8),
-           let decoded = try? JSONDecoder().decode(MusicItemCollection<Song>.self, from: data) {
-            return Array(decoded)
-        }
-        return []
-    }
-}
-
-struct ScaleButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
-            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
 #Preview {
-    NavigationStack {
-        HomeView()
-            .environment(MusicSessionManager())
-    }
+    HomeView()
 }
