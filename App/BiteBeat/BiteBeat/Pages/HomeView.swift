@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var navigateToLoading = false
     
     @State private var recentSongs: [BiteMusicTrack] = []
+    @State private var showConnectAlert = false
     
     var body: some View {
         NavigationStack {
@@ -37,7 +38,7 @@ struct HomeView: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 16)
                     
-                    Text("Recently Played")
+                    Text(musicSession.isAuthorized ? "Recently Played" : "Default Playlist")
                         .font(.headline)
                         .foregroundStyle(.primary)
                         .padding(.horizontal, 24)
@@ -92,6 +93,20 @@ struct HomeView: View {
             .navigationDestination(isPresented: $navigateToLoading) {
                 AnalysisLoadingView(songsToAnalyze: recentSongs)
             }
+            .alert("Connect to Apple Music", isPresented: $showConnectAlert) {
+                Button("Connect") {
+                    Task {
+                        await musicSession.requestAuthorization()
+                        await fetchRecentSongs()
+                        navigateToLoading = true
+                    }
+                }
+                Button("Not Now", role: .cancel) {
+                    navigateToLoading = true
+                }
+            } message: {
+                Text("Connecting your Apple Music allows us to analyze your real listening history for a highly personalized food recommendation.")
+            }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetHome"))) { _ in
                 navigateToLoading = false
                 isExpanded = false
@@ -103,10 +118,15 @@ struct HomeView: View {
     }
     
     private func fetchRecentSongs() async {
-        do {
-            recentSongs = try await musicSession.fetchRecentlyPlayed(limit: 10)
-        } catch {
-            print("Failed to fetch recent songs: \(error)")
+        if musicSession.isAuthorized {
+            do {
+                recentSongs = try await musicSession.fetchRecentlyPlayed(limit: 10)
+            } catch {
+                print("Failed to fetch recent songs: \(error)")
+                recentSongs = await musicSession.fetchDefaultPlaylist()
+            }
+        } else {
+            recentSongs = await musicSession.fetchDefaultPlaylist()
         }
     }
     
@@ -151,7 +171,11 @@ struct HomeView: View {
     
     private var analyzeMoodButton: some View {
         Button {
-            navigateToLoading = true
+            if musicSession.isAuthorized {
+                navigateToLoading = true
+            } else {
+                showConnectAlert = true
+            }
         } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
