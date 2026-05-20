@@ -87,9 +87,22 @@ struct HomeView: View {
                     .padding(.bottom, 24)
                 
                 if viewModel.navigateToLoading {
-                    AnalysisLoadingView(songsToAnalyze: viewModel.recentSongs)
-                        .ignoresSafeArea()
-                        .transition(.opacity)
+                    AnalysisLoadingView(
+                        songsToAnalyze: viewModel.recentSongs,
+                        onAnalysisComplete: { vibeName, mainMeal, alternatives in
+                            viewModel.calculatedVibeName = vibeName
+                            viewModel.calculatedMain = mainMeal
+                            viewModel.calculatedAlternatives = alternatives
+                            viewModel.navigateToRecommendation = true
+                        },
+                        onCancel: {
+                            withAnimation(.easeInOut) {
+                                viewModel.navigateToLoading = false
+                            }
+                        }
+                    )
+                    .ignoresSafeArea()
+                    .transition(.opacity)
                 }
             }
             .alert("Connect to Apple Music", isPresented: $viewModel.showConnectAlert) {
@@ -121,11 +134,24 @@ struct HomeView: View {
                     Text("Connecting your Apple Music allows us to analyze your real listening history for a highly personalized food recommendation.")
                 }
             }
+            .navigationDestination(isPresented: $viewModel.navigateToRecommendation) {
+                if let vibeName = viewModel.calculatedVibeName, let main = viewModel.calculatedMain {
+                    RecommendationView(
+                        vibeName: vibeName,
+                        mainMeal: main,
+                        alternatives: viewModel.calculatedAlternatives
+                    )
+                }
+            }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetHome"))) { _ in
                 withAnimation(.easeInOut) {
                     viewModel.navigateToLoading = false
                 }
                 viewModel.isExpanded = false
+                viewModel.navigateToRecommendation = false
+                viewModel.calculatedVibeName = nil
+                viewModel.calculatedMain = nil
+                viewModel.calculatedAlternatives = []
             }
             .task {
                 if musicSession.authorizationStatus == .notDetermined {

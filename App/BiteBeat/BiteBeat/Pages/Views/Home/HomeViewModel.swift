@@ -15,6 +15,12 @@ public final class HomeViewModel {
     public var recentSongs: [BiteMusicTrack] = []
     public var showConnectAlert = false
     
+    // Calculated food recommendations and navigation
+    public var navigateToRecommendation = false
+    public var calculatedVibeName: String?
+    public var calculatedMain: Meal?
+    public var calculatedAlternatives: [Meal] = []
+    
     public init() {}
     
     public func fetchRecentSongs(using musicSession: MusicSessionManager) async {

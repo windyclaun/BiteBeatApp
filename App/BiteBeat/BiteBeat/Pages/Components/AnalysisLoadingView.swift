@@ -11,9 +11,15 @@ import BiteBeatMusic
 
 struct AnalysisLoadingView: View {
     @State private var viewModel: AnalysisLoadingViewModel
+    let onAnalysisComplete: @MainActor (String, Meal, [Meal]) -> Void
+    let onCancel: @MainActor () -> Void
     
-    init(songsToAnalyze: [BiteMusicTrack]) {
+    init(songsToAnalyze: [BiteMusicTrack],
+         onAnalysisComplete: @escaping @MainActor (String, Meal, [Meal]) -> Void,
+         onCancel: @escaping @MainActor () -> Void) {
         _viewModel = State(initialValue: AnalysisLoadingViewModel(songsToAnalyze: songsToAnalyze))
+        self.onAnalysisComplete = onAnalysisComplete
+        self.onCancel = onCancel
     }
     
     var body: some View {
@@ -31,20 +37,16 @@ struct AnalysisLoadingView: View {
                 .padding(.horizontal)
             
             Spacer()
+            
+            cancelButton
+                .padding(.bottom, 32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
-        .navigationDestination(isPresented: $viewModel.navigateToRecommendation) {
-            if let vibeName = viewModel.calculatedVibeName, let main = viewModel.calculatedMain {
-                RecommendationView(
-                    vibeName: vibeName,
-                    mainMeal: main,
-                    alternatives: viewModel.calculatedAlternatives
-                )
-            }
-        }
         .task {
-            viewModel.startAnalysisAndAnimations()
+            viewModel.startAnalysisAndAnimations { vibeName, mainMeal, alternatives in
+                onAnalysisComplete(vibeName, mainMeal, alternatives)
+            }
         }
     }
     
@@ -115,6 +117,23 @@ struct AnalysisLoadingView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.primary)
                 .contentTransition(.identity)
+        }
+    }
+    
+    private var cancelButton: some View {
+        Button {
+            viewModel.cancelWorkflow()
+            onCancel()
+        } label: {
+            Text("Cancel")
+                .font(.subheadline.bold())
+                .foregroundStyle(.pink)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .stroke(Color.pink.opacity(0.3), lineWidth: 1)
+                )
         }
     }
 }
@@ -240,7 +259,9 @@ public final class AnalysisLoadingViewModel {
     public var calculatedVibeDescription: String?
     public var calculatedMain: Meal?
     public var calculatedAlternatives: [Meal] = []
-    public var navigateToRecommendation = false
+    
+    private var workflowTask: Task<Void, Never>?
+    private var onCompleteCallback: (@MainActor (String, Meal, [Meal]) -> Void)?
     
     public init(songsToAnalyze: [BiteMusicTrack]) {
         self.songsToAnalyze = songsToAnalyze
@@ -259,7 +280,9 @@ public final class AnalysisLoadingViewModel {
         return songsToAnalyze
     }
     
-    public func startAnalysisAndAnimations() {
+    public func startAnalysisAndAnimations(onComplete: @escaping @MainActor (String, Meal, [Meal]) -> Void) {
+        self.onCompleteCallback = onComplete
+        
         // Start continuous background visual effects
         withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
             pulseScale = 1.05
@@ -269,9 +292,13 @@ public final class AnalysisLoadingViewModel {
         }
         
         // Execute heavy workflow asynchronously
-        Task {
+        workflowTask = Task {
             await performAnalysisWorkflow()
         }
+    }
+    
+    public func cancelWorkflow() {
+        workflowTask?.cancel()
     }
     
     private func performAnalysisWorkflow() async {
@@ -296,7 +323,10 @@ public final class AnalysisLoadingViewModel {
         let stepDuration = 0.035 // 3.5 seconds total
         
         for step in 1...totalSteps {
+            if Task.isCancelled { return }
             try? await Task.sleep(nanoseconds: UInt64(stepDuration * 1_000_000_000))
+            if Task.isCancelled { return }
+            
             let newProgress = CGFloat(step) / CGFloat(totalSteps)
             
             withAnimation(.linear(duration: stepDuration)) {
@@ -313,20 +343,30 @@ public final class AnalysisLoadingViewModel {
             }
         }
         
+        if Task.isCancelled { return }
         // Wait for both animation sequence and analytical API results to finalize
         let result = await analysisTask.value
+        if Task.isCancelled { return }
+        
         calculatedVibeName = result.vibeName
         calculatedVibeDescription = result.vibeDescription
         calculatedMain = result.mainMeal
         calculatedAlternatives = result.alternatives
         
         try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+        if Task.isCancelled { return }
+        
         if let vibe = calculatedVibeName {
             loadingStatus = "Matched your mood to \(vibe)!"
         }
         
         try? await Task.sleep(nanoseconds: 800_000_000) // 0.8 seconds
-        navigateToRecommendation = true
+        if Task.isCancelled { return }
+        
+        // Finalize transition via completion callback
+        if let vibeName = calculatedVibeName, let main = calculatedMain {
+            onCompleteCallback?(vibeName, main, calculatedAlternatives)
+        }
     }
     
     private func triggerOrbScaleBounceIfNeeded(progress: CGFloat) {

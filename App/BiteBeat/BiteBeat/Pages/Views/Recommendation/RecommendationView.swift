@@ -2,6 +2,7 @@ import BiteBeatMusic
 import SwiftUI
 
 struct RecommendationView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var viewModel: RecommendationViewModel
     
     init(vibeName: String, mainMeal: Meal, alternatives: [Meal]) {
@@ -179,6 +180,7 @@ struct RecommendationView: View {
     
     private var closeButton: some View {
         Button {
+            dismiss()
             NotificationCenter.default.post(name: NSNotification.Name("ResetHome"), object: nil)
         } label: {
             Image(systemName: "xmark")
