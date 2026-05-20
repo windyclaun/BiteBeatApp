@@ -1,11 +1,12 @@
 import SwiftUI
-import MusicKit
+import BiteBeatMusic
 
 struct HomeView: View {
+    @Environment(MusicSessionManager.self) private var musicSession
     @State private var isExpanded = false
     @State private var navigateToLoading = false
     
-    @State private var recentSongs: [Song] = []
+    @State private var recentSongs: [BiteMusicTrack] = []
     
     var body: some View {
         NavigationStack {
@@ -99,10 +100,7 @@ struct HomeView: View {
     
     private func fetchRecentSongs() async {
         do {
-            var request = MusicRecentlyPlayedRequest<Song>()
-            request.limit = 10
-            let response = try await request.response()
-            recentSongs = Array(response.items)
+            recentSongs = try await musicSession.fetchRecentlyPlayed(limit: 10)
         } catch {
             print("Failed to fetch recent songs: \(error)")
         }

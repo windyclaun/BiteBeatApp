@@ -1,10 +1,8 @@
 import BiteBeatMusic
-import MusicKit
 import SwiftUI
 
 struct AnalysisLoadingView: View {
-    // KEMBALIKAN KE: [Song] bawaan MusicKit agar bisa masuk ke analyzer tanpa error
-    let songsToAnalyze: [Song]
+    let songsToAnalyze: [BiteMusicTrack]
     
     @Environment(\.dismiss) private var dismiss
     

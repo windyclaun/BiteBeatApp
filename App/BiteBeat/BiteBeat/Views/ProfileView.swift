@@ -1,11 +1,9 @@
 import BiteBeatMusic
-import MusicKit
-import StoreKit
 import SwiftUI
 
 struct ProfileView: View {
     @Environment(MusicSessionManager.self) private var musicSession
-    @State private var recentSongs: [Song] = []
+    @State private var recentSongs: [BiteMusicTrack] = []
     @State private var dominantVibeName: String = "Loading..."
     @State private var dominantVibeDescription: String = "Loading..."
     @State private var isLoadingVibe = true
@@ -100,11 +98,9 @@ struct ProfileView: View {
                         .foregroundStyle(.secondary)
                 }
                 
-                if let subscription = musicSession.musicSubscription {
-                    LabeledContent("Play Catalog") {
-                        Image(systemName: subscription.canPlayCatalogContent ? "checkmark.circle.fill" : "xmark.circle")
-                            .foregroundStyle(subscription.canPlayCatalogContent ? .green : .secondary)
-                    }
+                LabeledContent("Play Catalog") {
+                    Image(systemName: musicSession.canPlayCatalogContent ? "checkmark.circle.fill" : "xmark.circle")
+                        .foregroundStyle(musicSession.canPlayCatalogContent ? .green : .secondary)
                 }
             }
             
@@ -129,13 +125,7 @@ struct ProfileView: View {
     private func fetchRecentSongsAndAnalyze() async {
         isLoadingVibe = true
         
-        var countryCode: String? = nil
-        if #available(iOS 18.0, *) {
-            countryCode = try? await MusicDataRequest.currentCountryCode
-        } else {
-            let controller = SKCloudServiceController()
-            countryCode = try? await controller.requestStorefrontCountryCode()
-        }
+        let countryCode = await musicSession.fetchStorefrontCountryCode()
         
         if let code = countryCode {
             let cleanCode = code.lowercased()
@@ -145,10 +135,7 @@ struct ProfileView: View {
         }
         
         do {
-            var request = MusicRecentlyPlayedRequest<Song>()
-            request.limit = 10
-            let response = try await request.response()
-            recentSongs = Array(response.items)
+            recentSongs = try await musicSession.fetchRecentlyPlayed(limit: 10)
             
             if recentSongs.isEmpty {
                 recentSongs = dummySongs
@@ -176,7 +163,7 @@ struct ProfileView: View {
         UIApplication.shared.open(url)
     }
     
-    private var dummySongs: [Song] {
+    private var dummySongs: [BiteMusicTrack] {
         return []
     }
 }

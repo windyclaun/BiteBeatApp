@@ -1,5 +1,5 @@
 import Foundation
-import MusicKit
+import BiteBeatMusic
 import SwiftUI
 import FoundationModels
 
@@ -105,7 +105,7 @@ public final class MusicToFoodAnalyzer: Sendable {
     }
     
     // Fungsi utama buat nerjemahin list lagu ke vibe makanan (dapat menu utama & 2 alternatif)
-    public func analyze(songs: [Song]) async throws -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) {
+    public func analyze(songs: [BiteMusicTrack]) async throws -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) {
         let songsList = songs.isEmpty ? "No recent songs, default to soft and calming music." : songs.map { "- \($0.title) by \($0.artistName)" }.joined(separator: "\n")
         
         var promptText = """
