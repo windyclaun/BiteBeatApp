@@ -160,8 +160,8 @@ struct RecommendationView: View {
                 Button {
                     NotificationCenter.default.post(name: NSNotification.Name("ResetHome"), object: nil)
                 } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2)
+                    Image(systemName: "xmark")
+                        .font(.body.bold())
                         .foregroundStyle(.secondary)
                 }
             }
