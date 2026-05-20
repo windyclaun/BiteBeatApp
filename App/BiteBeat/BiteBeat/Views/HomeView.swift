@@ -92,6 +92,10 @@ struct HomeView: View {
             .navigationDestination(isPresented: $navigateToLoading) {
                 AnalysisLoadingView(songsToAnalyze: recentSongs)
             }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetHome"))) { _ in
+                navigateToLoading = false
+                isExpanded = false
+            }
             .task {
                 await fetchRecentSongs()
             }
