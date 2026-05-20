@@ -3,11 +3,7 @@ import BiteBeatMusic
 
 struct HomeView: View {
     @Environment(MusicSessionManager.self) private var musicSession
-    @State private var isExpanded = false
-    @State private var navigateToLoading = false
-    
-    @State private var recentSongs: [BiteMusicTrack] = []
-    @State private var showConnectAlert = false
+    @State private var viewModel = HomeViewModel()
     
     var body: some View {
         NavigationStack {
@@ -43,22 +39,22 @@ struct HomeView: View {
                         .foregroundStyle(.primary)
                         .padding(.horizontal, 24)
                     
-                    if !isExpanded {
-                        //Tumpukan Kartu
+                    if !viewModel.isExpanded {
+                        // Tumpukan Kartu
                         cardStackView
                             .onTapGesture {
                                 withAnimation(.spring(response: 0.5, dampingFraction: 0.72, blendDuration: 0)) {
-                                    isExpanded = true
+                                    viewModel.isExpanded = true
                                 }
                             }
                             .padding(.horizontal, 24)
                         
                         Spacer()
                     } else {
-                        //Daftar yang bisa di-scroll
+                        // Daftar yang bisa di-scroll
                         ScrollView(.vertical, showsIndicators: false) {
                             VStack(spacing: 16) {
-                                ForEach(recentSongs) { song in
+                                ForEach(viewModel.recentSongs) { song in
                                     SongRow(song: song)
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 8)
@@ -69,7 +65,7 @@ struct HomeView: View {
                                 
                                 Button {
                                     withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
-                                        isExpanded = false
+                                        viewModel.isExpanded = false
                                     }
                                 } label: {
                                     Text("Collapse Stack")
@@ -90,50 +86,37 @@ struct HomeView: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom, 24)
             }
-            .navigationDestination(isPresented: $navigateToLoading) {
-                AnalysisLoadingView(songsToAnalyze: recentSongs)
+            .navigationDestination(isPresented: $viewModel.navigateToLoading) {
+                AnalysisLoadingView(songsToAnalyze: viewModel.recentSongs)
             }
-            .alert("Connect to Apple Music", isPresented: $showConnectAlert) {
+            .alert("Connect to Apple Music", isPresented: $viewModel.showConnectAlert) {
                 Button("Connect") {
                     Task {
                         await musicSession.requestAuthorization()
-                        await fetchRecentSongs()
-                        navigateToLoading = true
+                        await viewModel.fetchRecentSongs(using: musicSession)
+                        viewModel.navigateToLoading = true
                     }
                 }
                 Button("Not Now", role: .cancel) {
-                    navigateToLoading = true
+                    viewModel.navigateToLoading = true
                 }
             } message: {
                 Text("Connecting your Apple Music allows us to analyze your real listening history for a highly personalized food recommendation.")
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetHome"))) { _ in
-                navigateToLoading = false
-                isExpanded = false
+                viewModel.navigateToLoading = false
+                viewModel.isExpanded = false
             }
             .task {
-                await fetchRecentSongs()
+                await viewModel.fetchRecentSongs(using: musicSession)
             }
-        }
-    }
-    
-    private func fetchRecentSongs() async {
-        if musicSession.isAuthorized {
-            do {
-                recentSongs = try await musicSession.fetchRecentlyPlayed(limit: 10)
-            } catch {
-                print("Failed to fetch recent songs: \(error)")
-                recentSongs = await musicSession.fetchDefaultPlaylist()
-            }
-        } else {
-            recentSongs = await musicSession.fetchDefaultPlaylist()
         }
     }
     
     private var cardStackView: some View {
         ZStack {
-            if recentSongs.count > 2 {
-                SongRow(song: recentSongs[2])
+            if viewModel.recentSongs.count > 2 {
+                SongRow(song: viewModel.recentSongs[2])
                     .padding()
                     .background(Color(uiColor: .secondarySystemGroupedBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -142,8 +125,8 @@ struct HomeView: View {
                     .opacity(0.4)
             }
             
-            if recentSongs.count > 1 {
-                SongRow(song: recentSongs[1])
+            if viewModel.recentSongs.count > 1 {
+                SongRow(song: viewModel.recentSongs[1])
                     .padding()
                     .background(Color(uiColor: .secondarySystemGroupedBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 16))
@@ -152,7 +135,7 @@ struct HomeView: View {
                     .opacity(0.7)
             }
             
-            if let topSong = recentSongs.first {
+            if let topSong = viewModel.recentSongs.first {
                 SongRow(song: topSong)
                     .padding()
                     .background(Color(uiColor: .secondarySystemGroupedBackground))
@@ -172,9 +155,9 @@ struct HomeView: View {
     private var analyzeMoodButton: some View {
         Button {
             if musicSession.isAuthorized {
-                navigateToLoading = true
+                viewModel.navigateToLoading = true
             } else {
-                showConnectAlert = true
+                viewModel.showConnectAlert = true
             }
         } label: {
             HStack {

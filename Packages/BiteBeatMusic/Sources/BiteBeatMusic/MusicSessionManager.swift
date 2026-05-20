@@ -108,5 +108,92 @@ public final class MusicSessionManager {
             return try? await storefrontController.requestStorefrontCountryCode()
         }
     }
+
+    public func fetchTracksByIDs(_ ids: [String]) async throws -> [BiteMusicTrack] {
+        let musicItemIDs = ids.map { MusicItemID($0) }
+        var request = MusicCatalogResourceRequest<Song>(matching: \.id, memberOf: musicItemIDs)
+        let response = try await request.response()
+        return response.items.map { song in
+            let url = song.artwork?.url(width: 300, height: 300)
+            return BiteMusicTrack(
+                id: song.id.rawValue,
+                title: song.title,
+                artistName: song.artistName,
+                genreNames: song.genreNames,
+                artworkURL: url
+            )
+        }
+    }
+
+    public func fetchDefaultPlaylist() async -> [BiteMusicTrack] {
+        guard let url = Bundle.main.url(forResource: "default_playlist", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let urls = try? JSONDecoder().decode([String].self, from: data) else {
+            return getMockDefaultPlaylist()
+        }
+        
+        var trackIDs: [String] = []
+        for urlString in urls {
+            if let components = URLComponents(string: urlString),
+               let trackId = components.queryItems?.first(where: { $0.name == "i" })?.value {
+                trackIDs.append(trackId)
+            }
+        }
+        
+        if trackIDs.isEmpty {
+            return getMockDefaultPlaylist()
+        }
+        
+        do {
+            let fetched = try await fetchTracksByIDs(trackIDs)
+            if fetched.isEmpty {
+                return getMockDefaultPlaylist()
+            }
+            return fetched
+        } catch {
+            print("Failed to fetch default playlist from Apple Music API: \(error)")
+            return getMockDefaultPlaylist()
+        }
+    }
+    
+    public func getMockDefaultPlaylist() -> [BiteMusicTrack] {
+        return [
+            BiteMusicTrack(
+                id: "1484503472",
+                title: "Cruel Summer",
+                artistName: "Taylor Swift",
+                genreNames: ["Pop"],
+                artworkURL: nil
+            ),
+            BiteMusicTrack(
+                id: "1615577661",
+                title: "As It Was",
+                artistName: "Harry Styles",
+                genreNames: ["Pop"],
+                artworkURL: nil
+            ),
+            BiteMusicTrack(
+                id: "1499378199",
+                title: "Blinding Lights",
+                artistName: "The Weeknd",
+                genreNames: ["R&B/Soul"],
+                artworkURL: nil
+            ),
+            BiteMusicTrack(
+                id: "1192809232",
+                title: "Shape of You",
+                artistName: "Ed Sheeran",
+                genreNames: ["Pop"],
+                artworkURL: nil
+            ),
+            BiteMusicTrack(
+                id: "1529124425",
+                title: "Dynamite",
+                artistName: "K-Pop",
+                genreNames: ["Pop"],
+                artworkURL: nil
+            )
+        ]
+    }
 }
 

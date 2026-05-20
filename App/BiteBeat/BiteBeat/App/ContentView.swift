@@ -5,19 +5,10 @@ struct ContentView: View {
     @Environment(MusicSessionManager.self) private var musicSession
 
     var body: some View {
-        Group {
-            if musicSession.isAuthorized {
-                NavigationStack {
-                    HomeView()
-                }
-            } else {
-                AuthorizationView()
+        HomeView()
+            .onAppear {
+                musicSession.refreshAuthorizationStatus()
             }
-        }
-        .animation(.easeInOut, value: musicSession.isAuthorized)
-        .onAppear {
-            musicSession.refreshAuthorizationStatus()
-        }
     }
 }
 

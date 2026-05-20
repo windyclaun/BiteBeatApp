@@ -5,13 +5,6 @@
 //  Created by Windy Claudia Napitupulu on 19/05/26.
 //
 
-//
-//  DummyData.swift
-//  BiteBeat
-//
-//  Created by Windy Claudia Napitupulu on 19/05/26.
-//
-
 import SwiftUI
 
 public struct DummySong: Identifiable {
