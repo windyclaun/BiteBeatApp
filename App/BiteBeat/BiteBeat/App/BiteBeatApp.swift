@@ -16,6 +16,7 @@ struct BiteBeatApp: App {
         WindowGroup {
             ContentView()
                 .environment(musicSession)
+                .preferredColorScheme(.light)
                 .task {
                     await musicSession.observeSubscriptionUpdates()
                 }
