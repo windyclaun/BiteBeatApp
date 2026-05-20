@@ -255,6 +255,17 @@ struct HomeView: View {
                 }
                 await viewModel.fetchRecentSongs(using: musicSession)
             }
+            .task {
+                // Periodically wiggle/nudge the card stack every 8 seconds to remind the user it is interactive
+                while !Task.isCancelled {
+                    do {
+                        try await Task.sleep(nanoseconds: 4_000_000_000)
+                        triggerCardStackAnimation()
+                    } catch {
+                        break
+                    }
+                }
+            }
             .onAppear {
                 triggerCardStackAnimation()
             }
