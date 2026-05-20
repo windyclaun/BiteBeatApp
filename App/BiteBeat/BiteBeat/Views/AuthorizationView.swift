@@ -17,7 +17,7 @@ struct AuthorizationView: View {
             VStack(spacing: 16) {
                 Spacer()
                 
-                Image(systemName: "music.note")
+                Image("LogoApp")
                     .font(.system(size: 80, weight: .bold))
                     .foregroundStyle(.white)
                 
