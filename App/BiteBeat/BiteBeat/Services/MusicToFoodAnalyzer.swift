@@ -133,14 +133,14 @@ public final class MusicToFoodAnalyzer: Sendable {
         \(songsList)
         
         DESCRIPTIONS STYLE RULE:
-        For each recommended meal, the 'description' field MUST be a highly personalized, creative, and emotionally resonant explanation written in \(language.rawValue). You MUST connect the emotional state of their PLAYLIST ANALYSIS (based on the dominant genres and specific songs) with the characteristics of the food.
+        For each recommended meal, the 'description' field MUST be a highly personalized, creative, and emotionally resonant explanation written in \(language.rawValue). DO NOT map one food to just one song. Instead, treat the ENTIRE playlist as a single emotional journey. The food recommendation must synthesize the overall vibe of MULTIPLE songs together.
         
-        Crucially, you MUST explicitly mention specific song titles and artists from the provided song list inside the description. Furthermore, you must use your foundation model knowledge to INFER and QUOTE 1-2 lines of actual famous lyrics from these specific songs to explain the mood and vibe. 
+        Crucially, inside the description, you MUST explicitly mention SEVERAL different song titles and artists from the provided song list to explain how they collectively inspire this dish. Furthermore, use your foundation model knowledge to INFER and QUOTE 1-2 lines of actual famous lyrics from these specific songs to explain the mood and vibe. 
         
         Example narrative structure:
-        "This dish is perfect because your playlist shows you are feeling [Vibe/Mood, e.g., sad/chill], guided by dominant genres like \(dominantGenres). To help you [cheer up / embrace the mood], this food is the perfect choice! It's inspired by the emotional combination of songs in your playlist like '[Song Title 1]' by [Artist 1] and '[Song Title 2]' by [Artist 2], especially the lyrics '[Quote actual lyrics from the song]'. This meal will bring you comfort."
+        "This dish is the perfect culinary match for your entire playlist's [Vibe/Mood, e.g., sad/chill] atmosphere, guided by dominant genres like \(dominantGenres). Just as '[Song Title 1]' by [Artist 1] brings a feeling of [emotion], and '[Song Title 2]' by [Artist 2] adds a touch of [emotion]—especially with lyrics like '[Quote actual lyrics]'—this food combines [Food Characteristic 1] and [Food Characteristic 2] to [cheer you up / help you embrace the mood]."
         
-        Be highly creative and empathetic. Do not just use a dry recipe description.
+        Be highly creative and empathetic. Synthesize the multiple songs into a cohesive culinary story. Do not just use a dry recipe description.
         """
         
         switch mode {
