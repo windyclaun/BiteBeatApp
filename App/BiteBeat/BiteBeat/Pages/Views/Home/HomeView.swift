@@ -4,6 +4,8 @@ import BiteBeatMusic
 struct HomeView: View {
     @Environment(MusicSessionManager.self) private var musicSession
     @State private var viewModel = HomeViewModel()
+    @State private var expandedOpacity: Double = 1.0
+    @State private var isInteracting = false
     
     var body: some View {
         NavigationStack {
@@ -67,6 +69,7 @@ struct HomeView: View {
                             VStack(spacing: 28) {
                                 cardStackView
                                     .onTapGesture {
+                                        expandedOpacity = 1.0
                                         withAnimation(.spring(response: 0.5, dampingFraction: 0.72, blendDuration: 0)) {
                                             viewModel.isExpanded = true
                                         }
@@ -94,17 +97,6 @@ struct HomeView: View {
                                         .padding(.horizontal, 24)
                                 }
                                 
-                                Button {
-                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
-                                        viewModel.isExpanded = false
-                                    }
-                                } label: {
-                                    Text("Collapse Stack")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                        .padding()
-                                }
-                                
                                 Color.clear.frame(height: 120)
                             }
                             .padding(.top, 4)
@@ -112,7 +104,40 @@ struct HomeView: View {
                         .refreshable {
                             await viewModel.fetchRecentSongs(using: musicSession)
                         }
-                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+                        .opacity(expandedOpacity)
+                        .onScrollGeometryChange(for: [CGFloat].self) { geometry in
+                            [
+                                geometry.contentOffset.y,
+                                max(0, geometry.contentSize.height - geometry.containerSize.height)
+                            ]
+                        } action: { oldValue, newValue in
+                            let offset = newValue[0]
+                            let maxOffset = newValue[1]
+                            let overscroll = max(0, offset - maxOffset)
+                            
+                            // Calculate opacity based on overscroll (fades out as pulled up further)
+                            let targetOpacity = max(0.0, 1.0 - (overscroll / 100.0))
+                            expandedOpacity = targetOpacity
+                            
+                            // Only collapse if the user is actively dragging (not on momentum/deceleration)
+                            if isInteracting && offset > maxOffset + 60 {
+                                withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+                                    viewModel.isExpanded = false
+                                    expandedOpacity = 1.0
+                                }
+                            }
+                        }
+                        .onScrollPhaseChange { oldPhase, newPhase in
+                            isInteracting = (newPhase == .interacting)
+                            
+                            // Smoothly animate opacity back to 1.0 if the user releases without collapsing
+                            if newPhase == .idle {
+                                withAnimation(.easeOut(duration: 0.2)) {
+                                    expandedOpacity = 1.0
+                                }
+                            }
+                        }
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
                 
