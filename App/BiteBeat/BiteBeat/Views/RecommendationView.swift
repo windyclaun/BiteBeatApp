@@ -2,7 +2,7 @@ import BiteBeatMusic
 import SwiftUI
 
 struct RecommendationView: View {
-    let vibe: MusicVibe
+    let vibeName: String
     let mainMeal: Meal
     let alternatives: [Meal]
     
@@ -16,6 +16,7 @@ struct RecommendationView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
+                // Header Brand
                 VStack(spacing: 4) {
                     Text("Apple Intelligence Match")
                         .font(.footnote)
@@ -25,46 +26,51 @@ struct RecommendationView: View {
                         .bold()
                     
                     Text("Your Best Lunch Match")
-                        .font(.title.bold())
+                        .font(.title2.bold()) // Disesuaikan agar lebih rapi di screen kecil
                         .foregroundStyle(.primary)
                 }
                 .padding(.top, 12)
                 
                 if !choseNay {
+                    // Tampilan Utama (Sesuai dengan screen "Single Option" di Figma)
                     mainCard(for: mainMeal)
                         .transition(.asymmetric(
                             insertion: .opacity.combined(with: .move(edge: .leading)),
                             removal: .opacity.combined(with: .move(edge: .leading))
                         ))
                     
-                    HStack(spacing: 16) {
-                        Button {
-                            withAnimation(.spring(response: 0.45, dampingFraction: 0.7)) {
-                                choseNay = true
-                            }
-                        } label: {
-                            Label("Nay!", systemImage: "hand.thumbsdown.fill")
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(.secondary)
-                        .controlSize(.large)
-                        
+                    // Tombol Aksi - Diubah menjadi VStack agar sesuai dengan layout bertumpuk di Figma
+                    VStack(spacing: 12) {
                         Button {
                             finalMeal = mainMeal
                             navigateToEnding = true
                         } label: {
                             Label("Yay! Let's Eat!", systemImage: "fork.knife")
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
+                                .font(.headline)
                                 .bold()
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(.pink)
                         .controlSize(.large)
+                        .clipShape(Capsule()) // Mengikuti lekukan tombol elips di desain
+                        
+                        Button {
+                            withAnimation(.spring(response: 0.45, dampingFraction: 0.7)) {
+                                choseNay = true
+                            }
+                        } label: {
+                            Text("Nay, show me alternatives")
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.pink)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 24)
+                    
                 } else {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Explore 2 Alternatives:")
@@ -107,47 +113,43 @@ struct RecommendationView: View {
                         
                         Spacer()
                         
-                        Button {
-                            if let selectedAlternative {
-                                finalMeal = selectedAlternative
-                                navigateToEnding = true
+                        VStack(spacing: 12) {
+                            Button {
+                                if let selectedAlternative {
+                                    finalMeal = selectedAlternative
+                                    navigateToEnding = true
+                                }
+                            } label: {
+                                Text("Let's Eat!")
+                                    .font(.headline)
+                                    .bold()
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
                             }
-                        } label: {
-                            Text("Let's Eat!")
-                                .font(.headline)
-                                .bold()
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.pink)
-                        .disabled(selectedAlternative == nil)
-                        .padding(.horizontal)
-                        .padding(.top, 10)
-                        
-                        Button {
-                            withAnimation(.spring(response: 0.45, dampingFraction: 0.7)) {
-                                choseNay = false
-                                selectedAlternative = nil
+                            .buttonStyle(.borderedProminent)
+                            .tint(.pink)
+                            .disabled(selectedAlternative == nil)
+                            .clipShape(Capsule())
+                            
+                            Button {
+                                withAnimation(.spring(response: 0.45, dampingFraction: 0.7)) {
+                                    choseNay = false
+                                    selectedAlternative = nil
+                                }
+                            } label: {
+                                Text("Show Best Match Again")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity)
                             }
-                        } label: {
-                            Text("Show Best Match Again")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity)
+                            .padding(.top, 4)
                         }
-                        .padding(.top, 4)
+                        .padding(.horizontal, 24)
                     }
                     .transition(.asymmetric(
                         insertion: .opacity.combined(with: .move(edge: .trailing)),
                         removal: .opacity.combined(with: .move(edge: .trailing))
                     ))
-                }
-            }
-            .padding(.bottom, 32)
-            .navigationDestination(isPresented: $navigateToEnding) {
-                if let meal = finalMeal {
-                    EndingView(selectedMeal: meal)
                 }
             }
         }
@@ -161,20 +163,26 @@ struct RecommendationView: View {
                 .foregroundStyle(.secondary)
             }
         }
+        .navigationDestination(isPresented: $navigateToEnding) {
+            if let meal = finalMeal {
+                EndingView(selectedMeal: meal)
+            }
+        }
     }
     
     @ViewBuilder
     private func mainCard(for meal: Meal) -> some View {
         VStack(spacing: 0) {
+            // DIUBAH: Mengikuti gambar bulat besar (makanan melingkar) di tengah design Figma
             FoodImageView(
                 mealTitle: meal.title,
                 wikipediaQuery: meal.wikipediaSearchQuery,
                 fallbackUrl: meal.imageUrl
             )
-            .frame(height: 220)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
-            .padding([.horizontal, .top], 16)
+            .frame(width: 240, height: 240) // Ukuran proporsional bulat di Figma
+            .clipShape(Circle())
+            .shadow(color: .black.opacity(0.15), radius: 10, y: 6)
+            .padding(.top, 20)
             
             VStack(spacing: 16) {
                 VStack(spacing: 6) {
@@ -208,8 +216,8 @@ struct RecommendationView: View {
         .frame(maxWidth: .infinity)
         .background(.background)
         .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
-        .padding(.horizontal)
+        .shadow(color: .black.opacity(0.04), radius: 12, y: 6)
+        .padding(.horizontal, 24)
     }
     
     @ViewBuilder
@@ -268,7 +276,7 @@ struct RecommendationView: View {
 
 #Preview {
     RecommendationView(
-        vibe: .vibrantSpicy,
+        vibeName: "Vibrant & Spicy",
         mainMeal: Meal(
             title: "Nasi Uduk Ayam Goreng",
             price: "Rp 25.000",

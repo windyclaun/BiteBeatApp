@@ -8,7 +8,7 @@ public final class FoodImageService {
     // Query Wikipedia/Wikimedia API secara asinkron tanpa api key
     public func fetchImage(for query: String) async -> String? {
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
-        let urlString = "https://id.wikipedia.org/w/api.php?action=query&titles=\(encodedQuery)&prop=pageimages&format=json&pithumbsize=600"
+        let urlString = "https://id.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=\(encodedQuery)&gsrlimit=1&prop=pageimages&format=json&pithumbsize=600"
         
         guard let url = URL(string: urlString) else { return nil }
         
