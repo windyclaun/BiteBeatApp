@@ -127,11 +127,14 @@ public final class MusicToFoodAnalyzer: Sendable {
         CRITICAL RULE: You MUST NOT recommend any starch-based street foods (berbahan dasar aci) such as Seblak, Batagor, Siomay, Pempek, Cireng, Cilok, etc. You also MUST NOT recommend any meatballs (Bakso) under any circumstances. Focus on rich and satisfying standard meals or wholesome dishes instead.
         
         DESCRIPTIONS STYLE RULE:
-        For each recommended meal, the 'description' field MUST be a highly personalized, creative, and emotionally resonant explanation. You MUST connect the emotional state of their playlist (e.g. sad, happy, energetic, chill) with the characteristics of the food.
-        The description MUST be written in \(language.rawValue) and follow this emotional narrative structure:
-        "Makanan ini sangat cocok karena dari playlist Anda, tampaknya Anda sedang merasakan [Vibe/Mood, e.g., sedih/galau/santai]. Untuk membantu Anda [cheer up / melupakan rasa sedih / merayakan keceriaan], makanan ini adalah pilihan sempurna! Ini terinspirasi dari kombinasi emosi lagu-lagu di playlist Anda seperti '[Song Title 1]' oleh [Artist 1] dan '[Song Title 2]' oleh [Artist 2] yang membawa nuansa [lyric vibe or musical style]."
+        For each recommended meal, the 'description' field MUST be a highly personalized, creative, and emotionally resonant explanation written in \(language.rawValue). You MUST connect the emotional state of their playlist (e.g. sad, happy, energetic, chill) with the characteristics of the food.
         
-        Be highly creative and empathetic. Do not just use a dry recipe description. Make sure to refer to specific song titles and artists from the provided song list inside each meal's description.
+        Crucially, you MUST explicitly mention specific song titles and artists from the provided song list inside the description. Furthermore, use your internal knowledge to quote 1-2 lines of actual lyrics from these songs to explain the mood. 
+        
+        Example narrative structure:
+        "This dish is perfect because your playlist shows you are feeling [Vibe/Mood, e.g., sad/chill]. To help you [cheer up / embrace the mood], this food is the perfect choice! It's inspired by the emotional combination of songs in your playlist like '[Song Title 1]' by [Artist 1] and '[Song Title 2]' by [Artist 2], especially the lyrics '[Quote actual lyrics from the song]'. This meal will bring you comfort."
+        
+        Be highly creative and empathetic. Do not just use a dry recipe description.
         
         Songs:
         \(songsList)
