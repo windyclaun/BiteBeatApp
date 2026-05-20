@@ -64,16 +64,18 @@ struct HomeView: View {
                     }
                     .padding(.horizontal, 24)
                     
-                    if !viewModel.isExpanded {
+                    ZStack {
                         // Stacked Cards Mode (large view) - wrapped in ScrollView for pull-to-refresh
                         ScrollView(.vertical, showsIndicators: false) {
                             VStack(spacing: 28) {
                                 cardStackView
                                     .onTapGesture {
-                                        expandedOpacity = 1.0
-                                        scrollResetTrigger = UUID() // Force fresh ScrollView on expand
-                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.72, blendDuration: 0)) {
-                                            viewModel.isExpanded = true
+                                        if !viewModel.isExpanded {
+                                            expandedOpacity = 1.0
+                                            scrollResetTrigger = UUID() // Force fresh ScrollView on expand
+                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.72, blendDuration: 0)) {
+                                                viewModel.isExpanded = true
+                                            }
                                         }
                                     }
                                 
@@ -84,68 +86,76 @@ struct HomeView: View {
                             .padding(.bottom, 24)
                         }
                         .refreshable {
-                            await viewModel.fetchRecentSongs(using: musicSession)
+                            if !viewModel.isExpanded {
+                                await viewModel.fetchRecentSongs(using: musicSession)
+                            }
                         }
-                    } else {
-                        // Expanded Scrollable List Mode (normal/smaller view)
-                        ScrollView(.vertical, showsIndicators: false) {
-                            VStack(spacing: 16) {
-                                ForEach(viewModel.recentSongs) { song in
-                                    SongRow(song: song)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 8)
-                                        .background(Color(uiColor: .secondarySystemGroupedBackground))
-                                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                        .padding(.horizontal, 24)
+                        .disabled(viewModel.isExpanded)
+                        .opacity(viewModel.isExpanded ? (1.0 - expandedOpacity) : 1.0)
+                        .offset(y: viewModel.isExpanded ? (expandedOpacity * 80) : 0)
+                        .scaleEffect(viewModel.isExpanded ? (0.92 + (1.0 - expandedOpacity) * 0.08) : 1.0)
+                        
+                        if viewModel.isExpanded {
+                            // Expanded Scrollable List Mode (normal/smaller view)
+                            ScrollView(.vertical, showsIndicators: false) {
+                                VStack(spacing: 16) {
+                                    ForEach(viewModel.recentSongs) { song in
+                                        SongRow(song: song)
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 8)
+                                            .background(Color(uiColor: .secondarySystemGroupedBackground))
+                                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                            .padding(.horizontal, 24)
+                                    }
+                                    
+                                    Color.clear.frame(height: 120)
+                                }
+                                .padding(.top, 4)
+                            }
+                            .id(scrollResetTrigger) // Force a completely fresh scroll offset when opened
+                            .refreshable {
+                                await viewModel.fetchRecentSongs(using: musicSession)
+                            }
+                            .opacity(expandedOpacity)
+                            .onScrollGeometryChange(for: CGFloat.self) { geometry in
+                                let maxOffset = max(0, geometry.contentSize.height - geometry.containerSize.height)
+                                return geometry.contentOffset.y - maxOffset
+                            } action: { oldValue, newValue in
+                                let overscroll = max(0, newValue)
+                                
+                                // Highly optimized: only update state if opacity actually changes, preventing jitter during normal fast scrolling
+                                let targetOpacity = max(0.0, 1.0 - (overscroll / 100.0))
+                                if expandedOpacity != targetOpacity {
+                                    expandedOpacity = targetOpacity
+                                }
+                            }
+                            .onScrollPhaseChange { oldPhase, newPhase, context in
+                                isInteracting = (newPhase == .interacting)
+                                
+                                // Only close when the user actually releases their finger (interacting -> decelerating/idle)
+                                // and the final drag position was past the threshold (+60)
+                                if oldPhase == .interacting && (newPhase == .decelerating || newPhase == .idle) {
+                                    let geometry = context.geometry
+                                    let offset = geometry.contentOffset.y
+                                    let maxOffset = max(0, geometry.contentSize.height - geometry.containerSize.height)
+                                    
+                                    if offset > maxOffset + 60 {
+                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+                                            viewModel.isExpanded = false
+                                            expandedOpacity = 1.0
+                                        }
+                                    }
                                 }
                                 
-                                Color.clear.frame(height: 120)
-                            }
-                            .padding(.top, 4)
-                        }
-                        .id(scrollResetTrigger) // Force a completely fresh scroll offset when opened
-                        .refreshable {
-                            await viewModel.fetchRecentSongs(using: musicSession)
-                        }
-                        .opacity(expandedOpacity)
-                        .onScrollGeometryChange(for: CGFloat.self) { geometry in
-                            let maxOffset = max(0, geometry.contentSize.height - geometry.containerSize.height)
-                            return geometry.contentOffset.y - maxOffset
-                        } action: { oldValue, newValue in
-                            let overscroll = max(0, newValue)
-                            
-                            // Highly optimized: only update state if opacity actually changes, preventing jitter during normal fast scrolling
-                            let targetOpacity = max(0.0, 1.0 - (overscroll / 100.0))
-                            if expandedOpacity != targetOpacity {
-                                expandedOpacity = targetOpacity
-                            }
-                        }
-                        .onScrollPhaseChange { oldPhase, newPhase, context in
-                            isInteracting = (newPhase == .interacting)
-                            
-                            // Only close when the user actually releases their finger (interacting -> decelerating/idle)
-                            // and the final drag position was past the threshold (+60)
-                            if oldPhase == .interacting && (newPhase == .decelerating || newPhase == .idle) {
-                                let geometry = context.geometry
-                                let offset = geometry.contentOffset.y
-                                let maxOffset = max(0, geometry.contentSize.height - geometry.containerSize.height)
-                                
-                                if offset > maxOffset + 60 {
-                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
-                                        viewModel.isExpanded = false
+                                // Smoothly animate opacity back to 1.0 if the user releases without collapsing
+                                if newPhase == .idle {
+                                    withAnimation(.easeOut(duration: 0.2)) {
                                         expandedOpacity = 1.0
                                     }
                                 }
                             }
-                            
-                            // Smoothly animate opacity back to 1.0 if the user releases without collapsing
-                            if newPhase == .idle {
-                                withAnimation(.easeOut(duration: 0.2)) {
-                                    expandedOpacity = 1.0
-                                }
-                            }
+                            .transition(.opacity.combined(with: .move(edge: .top)))
                         }
-                        .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                 }
                 
@@ -166,6 +176,7 @@ struct HomeView: View {
                             )
                             .ignoresSafeArea()
                         )
+                        .opacity(expandedOpacity)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
                 
