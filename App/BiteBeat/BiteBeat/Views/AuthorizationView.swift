@@ -30,7 +30,7 @@ struct AuthorizationView: View {
             
             // Onboard Permission
             if showPermissionDialog {
-                Color.black.opacity(0.05)
+                Color.black.opacity(0.4)
                     .ignoresSafeArea()
                     .transition(.opacity)
                 
@@ -38,11 +38,11 @@ struct AuthorizationView: View {
                     Text("Connect Apple Music")
                         .font(.headline)
                         .fontWeight(.bold)
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.primary)
                     
                     Text("Allow BiteBeat to access your Apple Music activity to analyze your listening mood")
                         .font(.subheadline)
-                        .foregroundStyle(.gray)
+                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 10)
                         .lineSpacing(2)
@@ -86,7 +86,8 @@ struct AuthorizationView: View {
                         } label: {
                             Text("Not Now")
                                 .font(.subheadline)
-                                .foregroundStyle(.red)
+                                .foregroundStyle(.secondary)
+                                .bold()
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12)
                         }
@@ -96,17 +97,14 @@ struct AuthorizationView: View {
                 .padding(24)
                 .frame(width: 320)
                 .background(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                        .background(
-                            Color.pink.opacity(0.15)
-                        )
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(Color(uiColor: .systemBackground))
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 28, style: .continuous)
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(Color(uiColor: .separator), lineWidth: 0.5)
                 )
-                .shadow(color: .black.opacity(0.15), radius: 25, y: 10)
+                .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
                 .transition(.scale.combined(with: .opacity))
             }
         }
