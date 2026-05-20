@@ -118,26 +118,29 @@ public final class MusicToFoodAnalyzer: Sendable {
     
     /// Main analysis function that translates tracks into food recommendations (one main, two alternatives) using Apple Intelligence.
     public func analyze(songs: [BiteMusicTrack]) async throws -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) {
-        let songsList = songs.isEmpty ? "No recent songs, default to soft and calming music." : songs.map { "- \($0.title) by \($0.artistName)" }.joined(separator: "\n")
+        let dominantGenres = extractDominantGenres(from: songs)
+        let songsList = songs.isEmpty ? "No recent songs, default to soft and calming music." : songs.map { "- \($0.title) by \($0.artistName) (Genres: \($0.genreNames.joined(separator: ", ")))" }.joined(separator: "\n")
         
         var promptText = """
-        You are a food and music expert. Analyze these recently played songs and recommend 3 food dishes (1 main, 2 alternatives) that match the emotional and sonic vibe of the songs.
+        You are a food and music expert. Analyze the following PLAYLIST ANALYSIS and recommend 3 food dishes (1 main, 2 alternatives) that perfectly match the emotional and sonic vibe of the playlist.
         The output (vibeName, vibeDescription, title, and description) MUST be in \(language.rawValue) language.
         
         CRITICAL RULE: You MUST NOT recommend any starch-based street foods (berbahan dasar aci) such as Seblak, Batagor, Siomay, Pempek, Cireng, Cilok, etc. You also MUST NOT recommend any meatballs (Bakso) under any circumstances. Focus on rich and satisfying standard meals or wholesome dishes instead.
         
-        DESCRIPTIONS STYLE RULE:
-        For each recommended meal, the 'description' field MUST be a highly personalized, creative, and emotionally resonant explanation written in \(language.rawValue). You MUST connect the emotional state of their playlist (e.g. sad, happy, energetic, chill) with the characteristics of the food.
+        PLAYLIST ANALYSIS:
+        - Dominant Genres: \(dominantGenres)
+        - Track List:
+        \(songsList)
         
-        Crucially, you MUST explicitly mention specific song titles and artists from the provided song list inside the description. Furthermore, use your internal knowledge to quote 1-2 lines of actual lyrics from these songs to explain the mood. 
+        DESCRIPTIONS STYLE RULE:
+        For each recommended meal, the 'description' field MUST be a highly personalized, creative, and emotionally resonant explanation written in \(language.rawValue). You MUST connect the emotional state of their PLAYLIST ANALYSIS (based on the dominant genres and specific songs) with the characteristics of the food.
+        
+        Crucially, you MUST explicitly mention specific song titles and artists from the provided song list inside the description. Furthermore, you must use your foundation model knowledge to INFER and QUOTE 1-2 lines of actual famous lyrics from these specific songs to explain the mood and vibe. 
         
         Example narrative structure:
-        "This dish is perfect because your playlist shows you are feeling [Vibe/Mood, e.g., sad/chill]. To help you [cheer up / embrace the mood], this food is the perfect choice! It's inspired by the emotional combination of songs in your playlist like '[Song Title 1]' by [Artist 1] and '[Song Title 2]' by [Artist 2], especially the lyrics '[Quote actual lyrics from the song]'. This meal will bring you comfort."
+        "This dish is perfect because your playlist shows you are feeling [Vibe/Mood, e.g., sad/chill], guided by dominant genres like \(dominantGenres). To help you [cheer up / embrace the mood], this food is the perfect choice! It's inspired by the emotional combination of songs in your playlist like '[Song Title 1]' by [Artist 1] and '[Song Title 2]' by [Artist 2], especially the lyrics '[Quote actual lyrics from the song]'. This meal will bring you comfort."
         
         Be highly creative and empathetic. Do not just use a dry recipe description.
-        
-        Songs:
-        \(songsList)
         """
         
         switch mode {
@@ -230,6 +233,24 @@ public final class MusicToFoodAnalyzer: Sendable {
         }
         
         return (result.vibeName, result.vibeDescription, mainMeal, alternatives)
+    }
+    
+    private func extractDominantGenres(from songs: [BiteMusicTrack]) -> String {
+        var genreCounts: [String: Int] = [:]
+        for song in songs {
+            for genre in song.genreNames {
+                genreCounts[genre, default: 0] += 1
+            }
+        }
+        
+        let sortedGenres = genreCounts.sorted { $0.value > $1.value }
+        let topGenres = sortedGenres.prefix(3).map { $0.key }
+        
+        if topGenres.isEmpty {
+            return "Mixed / Unknown Vibe"
+        } else {
+            return topGenres.joined(separator: ", ")
+        }
     }
 }
 
