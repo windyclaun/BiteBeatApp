@@ -104,15 +104,27 @@ public final class MusicToFoodAnalyzer: Sendable {
         self.mode = mode
     }
     
-    /// Creates a MusicToFoodAnalyzer that grounds recommendations using the local 'foods.json' database asset.
-    /// Falls back to creative mode if the asset file is unavailable.
-    public static func makeDefault(language: AnalyzerLanguage = .english) -> MusicToFoodAnalyzer {
+    /// Creates a MusicToFoodAnalyzer that grounds recommendations using the local 'foods.json' database asset or creative mode based on UserDefaults.
+    public static func makeDefault() -> MusicToFoodAnalyzer {
+        // 1. Read language preference
+        let storedLanguage = UserDefaults.standard.string(forKey: "analyzerLanguage") ?? "english"
+        let language: AnalyzerLanguage = (storedLanguage == "indonesian") ? .indonesian : .english
+        
+        // 2. Determine mode based on override
+        let storedModeOverride = UserDefaults.standard.string(forKey: "overrideAnalyzerMode") ?? "auto"
         var mode = AnalyzerMode.creative
-        if let url = Bundle.main.url(forResource: "foods", withExtension: "json"),
-           let data = try? Data(contentsOf: url),
-           let jsonString = String(data: data, encoding: .utf8) {
-            mode = .database(jsonString: jsonString)
+        
+        if storedModeOverride == "forceCreative" {
+            mode = .creative
+        } else {
+            // Attempt to load database
+            if let url = Bundle.main.url(forResource: "foods", withExtension: "json"),
+               let data = try? Data(contentsOf: url),
+               let jsonString = String(data: data, encoding: .utf8) {
+                mode = .database(jsonString: jsonString)
+            }
         }
+        
         return MusicToFoodAnalyzer(language: language, mode: mode)
     }
     

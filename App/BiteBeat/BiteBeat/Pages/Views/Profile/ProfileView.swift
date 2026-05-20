@@ -23,6 +23,12 @@ struct ProfileView: View {
             Section(footer: ImageAccessWarningFooter) {
                 disconnectButtonView
             }
+            
+            Section {
+                NavigationLink("About BiteBeat") {
+                    AboutView()
+                }
+            }
         }
         .listStyle(.insetGrouped)
         .navigationTitle("Profile")
