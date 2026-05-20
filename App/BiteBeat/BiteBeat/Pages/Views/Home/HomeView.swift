@@ -6,6 +6,7 @@ struct HomeView: View {
     @State private var viewModel = HomeViewModel()
     @State private var expandedOpacity: Double = 1.0
     @State private var isInteracting = false
+    @State private var scrollResetTrigger = UUID()
     
     var body: some View {
         NavigationStack {
@@ -70,6 +71,7 @@ struct HomeView: View {
                                 cardStackView
                                     .onTapGesture {
                                         expandedOpacity = 1.0
+                                        scrollResetTrigger = UUID() // Force fresh ScrollView on expand
                                         withAnimation(.spring(response: 0.5, dampingFraction: 0.72, blendDuration: 0)) {
                                             viewModel.isExpanded = true
                                         }
@@ -101,26 +103,25 @@ struct HomeView: View {
                             }
                             .padding(.top, 4)
                         }
+                        .id(scrollResetTrigger) // Force a completely fresh scroll offset when opened
                         .refreshable {
                             await viewModel.fetchRecentSongs(using: musicSession)
                         }
                         .opacity(expandedOpacity)
-                        .onScrollGeometryChange(for: [CGFloat].self) { geometry in
-                            [
-                                geometry.contentOffset.y,
-                                max(0, geometry.contentSize.height - geometry.containerSize.height)
-                            ]
+                        .onScrollGeometryChange(for: CGFloat.self) { geometry in
+                            let maxOffset = max(0, geometry.contentSize.height - geometry.containerSize.height)
+                            return geometry.contentOffset.y - maxOffset
                         } action: { oldValue, newValue in
-                            let offset = newValue[0]
-                            let maxOffset = newValue[1]
-                            let overscroll = max(0, offset - maxOffset)
+                            let overscroll = max(0, newValue)
                             
-                            // Calculate opacity based on overscroll (fades out as pulled up further)
+                            // Highly optimized: only update state if opacity actually changes, preventing jitter during normal fast scrolling
                             let targetOpacity = max(0.0, 1.0 - (overscroll / 100.0))
-                            expandedOpacity = targetOpacity
+                            if expandedOpacity != targetOpacity {
+                                expandedOpacity = targetOpacity
+                            }
                             
                             // Only collapse if the user is actively dragging (not on momentum/deceleration)
-                            if isInteracting && offset > maxOffset + 60 {
+                            if isInteracting && newValue > 60 {
                                 withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
                                     viewModel.isExpanded = false
                                     expandedOpacity = 1.0
