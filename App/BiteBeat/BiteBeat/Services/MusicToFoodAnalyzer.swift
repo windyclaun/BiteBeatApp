@@ -121,10 +121,17 @@ public final class MusicToFoodAnalyzer: Sendable {
         let songsList = songs.isEmpty ? "No recent songs, default to soft and calming music." : songs.map { "- \($0.title) by \($0.artistName)" }.joined(separator: "\n")
         
         var promptText = """
-        You are a food and music expert. Analyze these recently played songs and recommend 3 food dishes (1 main, 2 alternatives).
+        You are a food and music expert. Analyze these recently played songs and recommend 3 food dishes (1 main, 2 alternatives) that match the emotional and sonic vibe of the songs.
         The output (vibeName, vibeDescription, title, and description) MUST be in \(language.rawValue) language.
         
         CRITICAL RULE: You MUST NOT recommend any starch-based street foods (berbahan dasar aci) such as Seblak, Batagor, Siomay, Pempek, Cireng, Cilok, etc. You also MUST NOT recommend any meatballs (Bakso) under any circumstances. Focus on rich and satisfying standard meals or wholesome dishes instead.
+        
+        DESCRIPTIONS STYLE RULE:
+        For each recommended meal, the 'description' field MUST be a highly personalized, creative, and emotionally resonant explanation. You MUST connect the emotional state of their playlist (e.g. sad, happy, energetic, chill) with the characteristics of the food.
+        The description MUST be written in \(language.rawValue) and follow this emotional narrative structure:
+        "Makanan ini sangat cocok karena dari playlist Anda, tampaknya Anda sedang merasakan [Vibe/Mood, e.g., sedih/galau/santai]. Untuk membantu Anda [cheer up / melupakan rasa sedih / merayakan keceriaan], makanan ini adalah pilihan sempurna! Ini terinspirasi dari kombinasi emosi lagu-lagu di playlist Anda seperti '[Song Title 1]' oleh [Artist 1] dan '[Song Title 2]' oleh [Artist 2] yang membawa nuansa [lyric vibe or musical style]."
+        
+        Be highly creative and empathetic. Do not just use a dry recipe description. Make sure to refer to specific song titles and artists from the provided song list inside each meal's description.
         
         Songs:
         \(songsList)
