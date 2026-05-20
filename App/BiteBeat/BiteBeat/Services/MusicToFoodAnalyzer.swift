@@ -112,6 +112,8 @@ public final class MusicToFoodAnalyzer: Sendable {
         You are a food and music expert. Analyze these recently played songs and recommend 3 food dishes (1 main, 2 alternatives).
         The output (vibeName, vibeDescription, title, and description) MUST be in \(language.rawValue) language.
         
+        CRITICAL RULE: You MUST NOT recommend any starch-based street foods (berbahan dasar aci) such as Seblak, Batagor, Siomay, Pempek, Cireng, Cilok, etc. You also MUST NOT recommend any meatballs (Bakso) under any circumstances. Focus on rich and satisfying standard meals or wholesome dishes instead.
+        
         Songs:
         \(songsList)
         """
