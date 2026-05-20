@@ -172,26 +172,26 @@ struct AnalysisLoadingView: View {
             }
             
             // Start loading & API call asynchronously
-            async let fetchResult: Void = {
+            async let fetchResult: (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) = {
                 if #available(iOS 26.0, *) {
-                    let analyzer = MusicToFoodAnalyzer()
+                    let analyzer = await MusicToFoodAnalyzer()
                     do {
-                        let result = try await analyzer.analyze(songs: songsToAnalyze)
-                        calculatedVibeName = result.vibeName
-                        calculatedVibeDescription = result.vibeDescription
-                        calculatedMain = result.mainMeal
-                        calculatedAlternatives = result.alternatives
+                        return try await analyzer.analyze(songs: songsToAnalyze)
                     } catch {
-                        calculatedVibeName = "Error Analyzing"
-                        calculatedVibeDescription = "Failed to load from Apple Intelligence."
-                        calculatedMain = Meal(title: "Fallback Nasi Goreng", price: "Rp 25.000", location: "-", calories: "-", description: "-", systemImage: "flame.fill", gradientColors: ["orange", "red"])
-                        calculatedAlternatives = []
+                        return (
+                            vibeName: "Error Analyzing",
+                            vibeDescription: "Failed to load from Apple Intelligence.",
+                            mainMeal: Meal(title: "Fallback Nasi Goreng", price: "Rp 25.000", location: "-", calories: "-", description: "-", systemImage: "flame.fill", gradientColors: ["orange", "red"]),
+                            alternatives: []
+                        )
                     }
                 } else {
-                    calculatedVibeName = "Classic Mix"
-                    calculatedVibeDescription = "Apple Intelligence requires iOS 26.0 or newer."
-                    calculatedMain = Meal(title: "Fallback Nasi Goreng", price: "Rp 25.000", location: "-", calories: "-", description: "-", systemImage: "flame.fill", gradientColors: ["orange", "red"])
-                    calculatedAlternatives = []
+                    return (
+                        vibeName: "Classic Mix",
+                        vibeDescription: "Apple Intelligence requires iOS 26.0 or newer.",
+                        mainMeal: Meal(title: "Fallback Nasi Goreng", price: "Rp 25.000", location: "-", calories: "-", description: "-", systemImage: "flame.fill", gradientColors: ["orange", "red"]),
+                        alternatives: []
+                    )
                 }
             }()
             
@@ -241,7 +241,11 @@ struct AnalysisLoadingView: View {
             }
             
             // Wait for both the API call to finish and the minimum animation to complete
-            _ = await fetchResult
+            let result = await fetchResult
+            calculatedVibeName = result.vibeName
+            calculatedVibeDescription = result.vibeDescription
+            calculatedMain = result.mainMeal
+            calculatedAlternatives = result.alternatives
             
             await sleep(0.5)
             if let vibe = calculatedVibeName {

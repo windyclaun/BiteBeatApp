@@ -15,7 +15,7 @@ public struct Meal: Identifiable, Hashable, Sendable {
     public let gradientColors: [String] // Nama warna gradient biar gampang diconvert ke SwiftUI Color
     public let imageUrl: String
     
-    public init(
+    nonisolated public init(
         title: String,
         price: String,
         location: String,
