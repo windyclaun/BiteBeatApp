@@ -85,9 +85,12 @@ struct HomeView: View {
                 analyzeMoodButton
                     .padding(.horizontal, 24)
                     .padding(.bottom, 24)
-            }
-            .navigationDestination(isPresented: $viewModel.navigateToLoading) {
-                AnalysisLoadingView(songsToAnalyze: viewModel.recentSongs)
+                
+                if viewModel.navigateToLoading {
+                    AnalysisLoadingView(songsToAnalyze: viewModel.recentSongs)
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                }
             }
             .alert("Connect to Apple Music", isPresented: $viewModel.showConnectAlert) {
                 if musicSession.authorizationStatus == .denied {
@@ -99,13 +102,17 @@ struct HomeView: View {
                         Task {
                             await musicSession.requestAuthorization()
                             await viewModel.fetchRecentSongs(using: musicSession)
-                            viewModel.navigateToLoading = true
+                            withAnimation(.easeInOut) {
+                                viewModel.navigateToLoading = true
+                            }
                         }
                     }
                 }
                 
                 Button("Not Now", role: .cancel) {
-                    viewModel.navigateToLoading = true
+                    withAnimation(.easeInOut) {
+                        viewModel.navigateToLoading = true
+                    }
                 }
             } message: {
                 if musicSession.authorizationStatus == .denied {
@@ -115,7 +122,9 @@ struct HomeView: View {
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetHome"))) { _ in
-                viewModel.navigateToLoading = false
+                withAnimation(.easeInOut) {
+                    viewModel.navigateToLoading = false
+                }
                 viewModel.isExpanded = false
             }
             .task {
@@ -124,7 +133,6 @@ struct HomeView: View {
                 }
                 await viewModel.fetchRecentSongs(using: musicSession)
             }
-
         }
     }
     
@@ -170,11 +178,14 @@ struct HomeView: View {
     private var analyzeMoodButton: some View {
         Button {
             if musicSession.isAuthorized {
-                viewModel.navigateToLoading = true
+                withAnimation(.easeInOut) {
+                    viewModel.navigateToLoading = true
+                }
             } else {
                 viewModel.showConnectAlert = true
             }
         } label: {
+
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Analyze My Mood")
@@ -207,3 +218,4 @@ struct HomeView: View {
     HomeView()
         .environment(MusicSessionManager())
 }
+
