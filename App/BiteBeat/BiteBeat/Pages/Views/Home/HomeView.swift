@@ -40,7 +40,7 @@ struct HomeView: View {
                         .padding(.horizontal, 24)
                     
                     if !viewModel.isExpanded {
-                        // Tumpukan Kartu
+                        // Stacked Cards Mode
                         cardStackView
                             .onTapGesture {
                                 withAnimation(.spring(response: 0.5, dampingFraction: 0.72, blendDuration: 0)) {
@@ -51,7 +51,7 @@ struct HomeView: View {
                         
                         Spacer()
                     } else {
-                        // Daftar yang bisa di-scroll
+                        // Expanded Scrollable List Mode
                         ScrollView(.vertical, showsIndicators: false) {
                             VStack(spacing: 16) {
                                 ForEach(viewModel.recentSongs) { song in
@@ -191,7 +191,7 @@ struct HomeView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                     .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
             } else {
-                // Placeholder seandainya data lagu kosong saat awal loading
+                // Placeholder in case song data is empty during initial load
                 ContentUnavailableView("No Songs Found", systemImage: "music.note", description: Text("Please connect your Apple Music."))
                     .frame(height: 90)
                     .background(Color(uiColor: .secondarySystemGroupedBackground))

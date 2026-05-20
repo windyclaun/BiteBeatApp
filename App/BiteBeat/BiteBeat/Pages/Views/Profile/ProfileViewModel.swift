@@ -51,7 +51,7 @@ public final class ProfileViewModel {
             }
             
             if #available(iOS 26.0, *) {
-                let analyzer = MusicToFoodAnalyzer()
+                let analyzer = MusicToFoodAnalyzer.makeDefault()
                 let result = try await analyzer.analyze(songs: recentSongs)
                 dominantVibeName = result.vibeName
                 dominantVibeDescription = result.vibeDescription

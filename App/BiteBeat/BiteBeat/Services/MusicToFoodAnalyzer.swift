@@ -3,7 +3,7 @@ import BiteBeatMusic
 import SwiftUI
 import FoundationModels
 
-// Model data buat makanan
+// Data model for a recommended meal
 public struct Meal: Identifiable, Hashable, Sendable {
     public let id: UUID
     public let title: String
@@ -12,7 +12,7 @@ public struct Meal: Identifiable, Hashable, Sendable {
     public let calories: String
     public let description: String
     public let systemImage: String
-    public let gradientColors: [String] // Nama warna gradient biar gampang diconvert ke SwiftUI Color
+    public let gradientColors: [String] // Color name strings for generating SwiftUI gradients
     public let imageUrl: String
     
     nonisolated public init(
@@ -40,7 +40,7 @@ public struct Meal: Identifiable, Hashable, Sendable {
         return title
     }
     
-    // Bersihin nama jarak di teks lokasi
+    // Cleans up any trailing distance labels from the restaurant location
     public var restaurantName: String {
         if let index = location.firstIndex(of: "(") {
             return String(location[..<index]).trimmingCharacters(in: .whitespaces)
@@ -48,7 +48,7 @@ public struct Meal: Identifiable, Hashable, Sendable {
         return location
     }
     
-    // Helper buat convert array string ke SwiftUI Color
+    // Converts color name strings into SwiftUI Color instances
     public var swiftUIColors: [Color] {
         gradientColors.map { colorName in
             switch colorName.lowercased() {
@@ -104,7 +104,19 @@ public final class MusicToFoodAnalyzer: Sendable {
         self.mode = mode
     }
     
-    // Fungsi utama buat nerjemahin list lagu ke vibe makanan (dapat menu utama & 2 alternatif)
+    /// Creates a MusicToFoodAnalyzer that grounds recommendations using the local 'foods.json' database asset.
+    /// Falls back to creative mode if the asset file is unavailable.
+    public static func makeDefault(language: AnalyzerLanguage = .english) -> MusicToFoodAnalyzer {
+        var mode = AnalyzerMode.creative
+        if let url = Bundle.main.url(forResource: "foods", withExtension: "json"),
+           let data = try? Data(contentsOf: url),
+           let jsonString = String(data: data, encoding: .utf8) {
+            mode = .database(jsonString: jsonString)
+        }
+        return MusicToFoodAnalyzer(language: language, mode: mode)
+    }
+    
+    /// Main analysis function that translates tracks into food recommendations (one main, two alternatives) using Apple Intelligence.
     public func analyze(songs: [BiteMusicTrack]) async throws -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) {
         let songsList = songs.isEmpty ? "No recent songs, default to soft and calming music." : songs.map { "- \($0.title) by \($0.artistName)" }.joined(separator: "\n")
         

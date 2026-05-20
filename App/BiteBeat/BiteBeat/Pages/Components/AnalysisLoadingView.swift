@@ -305,7 +305,7 @@ public final class AnalysisLoadingViewModel {
         // Start backend analysis service task
         let analysisTask = Task { () -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) in
             if #available(iOS 26.0, *) {
-                let analyzer = MusicToFoodAnalyzer()
+                let analyzer = MusicToFoodAnalyzer.makeDefault()
                 do {
                     return try await analyzer.analyze(songs: songsToAnalyze)
                 } catch {

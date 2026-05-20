@@ -3,6 +3,7 @@ import SwiftUI
 
 struct AuthorizationView: View {
     @Environment(MusicSessionManager.self) private var musicSession
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @State private var viewModel = AuthorizationViewModel()
 
     var body: some View {
@@ -14,7 +15,7 @@ struct AuthorizationView: View {
             appLogoView
                 .blur(radius: viewModel.showPermissionDialog ? 4 : 0)
             
-            // Onboard Permission Dialog
+            // Onboard Permission Dialog Overlay
             if viewModel.showPermissionDialog {
                 dimmingOverlay
                 permissionDialogView
@@ -103,7 +104,11 @@ struct AuthorizationView: View {
         VStack(spacing: 4) {
             // Main Button: Connect Apple Music
             Button {
-                viewModel.requestAccess(using: musicSession)
+                viewModel.requestAccess(using: musicSession) {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                        hasCompletedOnboarding = true
+                    }
+                }
             } label: {
                 Group {
                     if viewModel.isRequesting {
@@ -125,8 +130,8 @@ struct AuthorizationView: View {
             
             // Cancel Button: Not Now
             Button {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    viewModel.showPermissionDialog = false
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.82)) {
+                    hasCompletedOnboarding = true
                 }
             } label: {
                 Text("Not Now")
@@ -144,4 +149,5 @@ struct AuthorizationView: View {
     AuthorizationView()
         .environment(MusicSessionManager())
 }
+
 

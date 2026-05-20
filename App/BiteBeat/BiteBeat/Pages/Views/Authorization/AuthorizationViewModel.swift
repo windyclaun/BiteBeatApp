@@ -15,6 +15,7 @@ public final class AuthorizationViewModel {
 
     public init() {}
 
+    /// Triggered when the view appears. Triggers the permission dialog with a spring animation after a short delay.
     public func handleOnAppear(using musicSession: MusicSessionManager) {
         musicSession.refreshAuthorizationStatus()
         
@@ -25,6 +26,7 @@ public final class AuthorizationViewModel {
         }
     }
 
+    /// Provides localized error descriptions for the authorization banner.
     public func getStatusBannerMessage(for status: BiteMusicAuthorizationStatus) -> String {
         switch status {
         case .denied:
@@ -36,7 +38,8 @@ public final class AuthorizationViewModel {
         }
     }
 
-    public func requestAccess(using musicSession: MusicSessionManager) {
+    /// Requests Apple Music authorization using the MusicSessionManager and executes a completion handler.
+    public func requestAccess(using musicSession: MusicSessionManager, completion: @escaping @MainActor () -> Void) {
         if musicSession.authorizationStatus == .denied {
             openSystemSettings()
             return
@@ -46,12 +49,15 @@ public final class AuthorizationViewModel {
         Task {
             await musicSession.requestAuthorization()
             isRequesting = false
+            completion()
         }
     }
 
+    /// Redirects the user to the iOS System Settings app.
     public func openSystemSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString),
               UIApplication.shared.canOpenURL(url) else { return }
         UIApplication.shared.open(url)
     }
 }
+
