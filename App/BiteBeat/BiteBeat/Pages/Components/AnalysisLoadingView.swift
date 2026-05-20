@@ -33,13 +33,12 @@ struct AnalysisLoadingView: View {
             
             // Status and Branding area
             statusAndBrandingView
-                .frame(height: 80)
                 .padding(.horizontal)
             
-            Spacer()
-            
             cancelButton
-                .padding(.bottom, 32)
+                .padding(.top, 16)
+            
+            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
@@ -113,7 +112,7 @@ struct AnalysisLoadingView: View {
                 .tracking(2.0)
             
             Text(viewModel.loadingStatus)
-                .font(.title2.bold())
+                .font(.headline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.primary)
                 .contentTransition(.identity)
@@ -127,13 +126,21 @@ struct AnalysisLoadingView: View {
         } label: {
             Text("Cancel")
                 .font(.subheadline.bold())
-                .foregroundStyle(.pink)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 10)
+                .foregroundStyle(.red)
+                .padding(.horizontal, 28)
+                .padding(.vertical, 12)
                 .background(
                     Capsule()
-                        .stroke(Color.pink.opacity(0.3), lineWidth: 1)
+                        .fill(Color.red.opacity(0.15))
+                        .background(
+                            Capsule().fill(.ultraThinMaterial)
+                        )
                 )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(Color.red.opacity(0.4), lineWidth: 0.5)
+                )
+                .shadow(color: .red.opacity(0.15), radius: 8, y: 4)
         }
     }
 }
