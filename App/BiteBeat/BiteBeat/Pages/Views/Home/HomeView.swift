@@ -70,6 +70,7 @@ struct HomeView: View {
                             VStack(spacing: 28) {
                                 cardStackView
                                     .onTapGesture {
+                                        guard !viewModel.recentSongs.isEmpty else { return }
                                         if !viewModel.isExpanded {
                                             expandedOpacity = 1.0
                                             scrollResetTrigger = UUID() // Force fresh ScrollView on expand
@@ -258,32 +259,55 @@ struct HomeView: View {
     
     private var cardStackView: some View {
         ZStack {
-            if viewModel.recentSongs.count > 2 {
-                LargeSongCard(song: viewModel.recentSongs[2])
-                    .scaleEffect(0.88)
-                    .offset(y: -36)
-                    .opacity(0.4)
-            }
-            
-            if viewModel.recentSongs.count > 1 {
-                LargeSongCard(song: viewModel.recentSongs[1])
-                    .scaleEffect(0.94)
-                    .offset(y: -18)
-                    .opacity(0.7)
-            }
-            
-            if let topSong = viewModel.recentSongs.first {
-                LargeSongCard(song: topSong)
-                    .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
+            if viewModel.isRefreshing && viewModel.recentSongs.isEmpty {
+                // Skeleton loading state
+                if HomeViewModel.defaultPlaylist.count > 2 {
+                    LargeSongCard(song: HomeViewModel.defaultPlaylist[2])
+                        .scaleEffect(0.88)
+                        .offset(y: -36)
+                        .opacity(0.4)
+                }
+                
+                if HomeViewModel.defaultPlaylist.count > 1 {
+                    LargeSongCard(song: HomeViewModel.defaultPlaylist[1])
+                        .scaleEffect(0.94)
+                        .offset(y: -18)
+                        .opacity(0.7)
+                }
+                
+                if let topSong = HomeViewModel.defaultPlaylist.first {
+                    LargeSongCard(song: topSong)
+                        .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
+                }
             } else {
-                // Placeholder in case song data is empty during initial load
-                ContentUnavailableView("No Songs Found", systemImage: "music.note", description: Text("Please connect your Apple Music."))
-                    .frame(height: 130)
-                    .background(Color(uiColor: .secondarySystemGroupedBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                if viewModel.recentSongs.count > 2 {
+                    LargeSongCard(song: viewModel.recentSongs[2])
+                        .scaleEffect(0.88)
+                        .offset(y: -36)
+                        .opacity(0.4)
+                }
+                
+                if viewModel.recentSongs.count > 1 {
+                    LargeSongCard(song: viewModel.recentSongs[1])
+                        .scaleEffect(0.94)
+                        .offset(y: -18)
+                        .opacity(0.7)
+                }
+                
+                if let topSong = viewModel.recentSongs.first {
+                    LargeSongCard(song: topSong)
+                        .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
+                } else {
+                    // Placeholder in case song data is empty during initial load
+                    ContentUnavailableView("No Songs Found", systemImage: "music.note", description: Text("Please connect your Apple Music."))
+                        .frame(height: 130)
+                        .background(Color(uiColor: .secondarySystemGroupedBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                }
             }
         }
         .padding(.top, 38)
+        .redacted(reason: (viewModel.isRefreshing && viewModel.recentSongs.isEmpty) ? .placeholder : [])
     }
     
     private var analyzeMoodButton: some View {

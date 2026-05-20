@@ -50,7 +50,7 @@ public static let defaultPlaylist: [BiteMusicTrack] = [
 
     public var isExpanded = false
     public var navigateToLoading = false
-    public var recentSongs: [BiteMusicTrack] = HomeViewModel.defaultPlaylist
+    public var recentSongs: [BiteMusicTrack] = []
     public var showConnectAlert = false
     public var isRefreshing = false
     
