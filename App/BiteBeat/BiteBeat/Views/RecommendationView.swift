@@ -157,10 +157,13 @@ struct RecommendationView: View {
         .navigationBarBackButtonHidden()
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Exit") {
-                    dismiss()
+                Button {
+                    NotificationCenter.default.post(name: NSNotification.Name("ResetHome"), object: nil)
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.secondary)
                 }
-                .foregroundStyle(.secondary)
             }
         }
         .navigationDestination(isPresented: $navigateToEnding) {
