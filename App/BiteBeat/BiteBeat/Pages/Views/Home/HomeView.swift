@@ -119,17 +119,24 @@ struct HomeView: View {
                             if expandedOpacity != targetOpacity {
                                 expandedOpacity = targetOpacity
                             }
+                        }
+                        .onScrollPhaseChange { oldPhase, newPhase, context in
+                            isInteracting = (newPhase == .interacting)
                             
-                            // Only collapse if the user is actively dragging (not on momentum/deceleration)
-                            if isInteracting && newValue > 60 {
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
-                                    viewModel.isExpanded = false
-                                    expandedOpacity = 1.0
+                            // Only close when the user actually releases their finger (interacting -> decelerating/idle)
+                            // and the final drag position was past the threshold (+60)
+                            if oldPhase == .interacting && (newPhase == .decelerating || newPhase == .idle) {
+                                let geometry = context.geometry
+                                let offset = geometry.contentOffset.y
+                                let maxOffset = max(0, geometry.contentSize.height - geometry.containerSize.height)
+                                
+                                if offset > maxOffset + 60 {
+                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+                                        viewModel.isExpanded = false
+                                        expandedOpacity = 1.0
+                                    }
                                 }
                             }
-                        }
-                        .onScrollPhaseChange { oldPhase, newPhase in
-                            isInteracting = (newPhase == .interacting)
                             
                             // Smoothly animate opacity back to 1.0 if the user releases without collapsing
                             if newPhase == .idle {
