@@ -141,12 +141,23 @@ struct AuthorizationView: View {
     }
 
     private func requestAccess() {
+        if musicSession.authorizationStatus == .denied {
+            openSystemSettings()
+            return
+        }
+        
         isRequesting = true
         Task {
             await musicSession.requestAuthorization()
             isRequesting = false
          
         }
+    }
+
+    private func openSystemSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString),
+              UIApplication.shared.canOpenURL(url) else { return }
+        UIApplication.shared.open(url)
     }
 }
 
