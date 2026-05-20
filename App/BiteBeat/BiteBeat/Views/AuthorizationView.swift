@@ -150,7 +150,6 @@ struct AuthorizationView: View {
         Task {
             await musicSession.requestAuthorization()
             isRequesting = false
-         
         }
     }
 
