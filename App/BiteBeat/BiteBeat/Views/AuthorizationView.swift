@@ -1,5 +1,4 @@
 import BiteBeatMusic
-import MusicKit
 import SwiftUI
 
 struct AuthorizationView: View {

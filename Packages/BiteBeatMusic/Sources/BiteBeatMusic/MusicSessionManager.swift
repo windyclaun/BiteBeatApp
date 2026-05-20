@@ -7,6 +7,13 @@ import MusicKit
 import Observation
 import StoreKit
 
+public enum BiteMusicAuthorizationStatus: Sendable, Codable, Equatable {
+    case notDetermined
+    case denied
+    case restricted
+    case authorized
+}
+
 public struct BiteMusicTrack: Identifiable, Sendable, Codable {
     public let id: String
     public let title: String
@@ -26,7 +33,7 @@ public struct BiteMusicTrack: Identifiable, Sendable, Codable {
 @MainActor
 @Observable
 public final class MusicSessionManager {
-    public var authorizationStatus: MusicAuthorization.Status = .notDetermined
+    public var authorizationStatus: BiteMusicAuthorizationStatus = .notDetermined
     public var musicSubscription: MusicSubscription?
 
     @ObservationIgnored
@@ -44,12 +51,22 @@ public final class MusicSessionManager {
         musicSubscription?.canBecomeSubscriber ?? false
     }
 
+    private func mapStatus(_ status: MusicAuthorization.Status) -> BiteMusicAuthorizationStatus {
+        switch status {
+        case .notDetermined: return .notDetermined
+        case .denied: return .denied
+        case .restricted: return .restricted
+        case .authorized: return .authorized
+        @unknown default: return .notDetermined
+        }
+    }
+
     public init() {
-        authorizationStatus = MusicAuthorization.currentStatus
+        authorizationStatus = mapStatus(MusicAuthorization.currentStatus)
     }
 
     public func refreshAuthorizationStatus() {
-        authorizationStatus = MusicAuthorization.currentStatus
+        authorizationStatus = mapStatus(MusicAuthorization.currentStatus)
     }
 
     public func refreshSubscription() async {
@@ -58,7 +75,7 @@ public final class MusicSessionManager {
 
     public func requestAuthorization() async {
         let status = await MusicAuthorization.request()
-        authorizationStatus = status
+        authorizationStatus = mapStatus(status)
     }
 
     public func observeSubscriptionUpdates() async {

@@ -81,14 +81,6 @@ struct AnalysisLoadingView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Cancel") {
-                    dismiss()
-                }
-                .foregroundStyle(.secondary)
-            }
-        }
         .navigationDestination(isPresented: $navigateToRecommendation) {
             if let vibeName = calculatedVibeName, let main = calculatedMain {
                 RecommendationView(
