@@ -9,7 +9,7 @@ struct AboutView: View {
     @State private var secretTapCount = 0
     @State private var showSecretMenu = false
     
-    private let teamMembers = [
+    @State private var teamMembers = [
         "Aulia Fajriyah",
         "Muhammad Hisyam Kamil",
         "Michelle Handa",
@@ -23,9 +23,16 @@ struct AboutView: View {
             
             // Header Logo
             VStack(spacing: 8) {
-                Image(systemName: "music.note.house.fill")
-                    .font(.system(size: 60))
-                    .foregroundStyle(.pink.gradient)
+                Image("LogoApp")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .padding(16)
+                    .background(
+                        Circle()
+                            .fill(.red.gradient)
+                    )
+                    .shadow(color: .red.opacity(0.3), radius: 8, y: 4)
                 
                 Text("BiteBeat")
                     .font(.largeTitle.bold())
@@ -43,10 +50,16 @@ struct AboutView: View {
             
             // Team Members Grid/List
             VStack(spacing: 16) {
-                Text("Created By")
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
+                VStack(spacing: 4) {
+                    Text("Created By")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                    
+                    Text("Team pUcak Gunung")
+                        .font(.title3.bold())
+                        .foregroundStyle(.pink)
+                }
                 
                 VStack(spacing: 12) {
                     ForEach(teamMembers, id: \.self) { member in
@@ -72,6 +85,9 @@ struct AboutView: View {
         .background(Color(uiColor: .systemGroupedBackground))
         .navigationTitle("About")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            teamMembers.shuffle()
+        }
         .sheet(isPresented: $showSecretMenu) {
             SecretMenuView()
         }
