@@ -90,26 +90,41 @@ struct HomeView: View {
                 AnalysisLoadingView(songsToAnalyze: viewModel.recentSongs)
             }
             .alert("Connect to Apple Music", isPresented: $viewModel.showConnectAlert) {
-                Button("Connect") {
-                    Task {
-                        await musicSession.requestAuthorization()
-                        await viewModel.fetchRecentSongs(using: musicSession)
-                        viewModel.navigateToLoading = true
+                if musicSession.authorizationStatus == .denied {
+                    Button("Open Settings") {
+                        viewModel.openSystemSettings()
+                    }
+                } else {
+                    Button("Connect") {
+                        Task {
+                            await musicSession.requestAuthorization()
+                            await viewModel.fetchRecentSongs(using: musicSession)
+                            viewModel.navigateToLoading = true
+                        }
                     }
                 }
+                
                 Button("Not Now", role: .cancel) {
                     viewModel.navigateToLoading = true
                 }
             } message: {
-                Text("Connecting your Apple Music allows us to analyze your real listening history for a highly personalized food recommendation.")
+                if musicSession.authorizationStatus == .denied {
+                    Text("Connecting your Apple Music allows us to analyze your real listening history for a highly personalized food recommendation. Please enable it in Settings.")
+                } else {
+                    Text("Connecting your Apple Music allows us to analyze your real listening history for a highly personalized food recommendation.")
+                }
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetHome"))) { _ in
                 viewModel.navigateToLoading = false
                 viewModel.isExpanded = false
             }
             .task {
+                if musicSession.authorizationStatus == .notDetermined {
+                    await musicSession.requestAuthorization()
+                }
                 await viewModel.fetchRecentSongs(using: musicSession)
             }
+
         }
     }
     

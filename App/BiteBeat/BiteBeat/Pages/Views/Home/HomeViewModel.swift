@@ -29,4 +29,12 @@ public final class HomeViewModel {
             recentSongs = await musicSession.fetchDefaultPlaylist()
         }
     }
+    
+    public func openSystemSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString),
+              UIApplication.shared.canOpenURL(url) else { return }
+        UIApplication.shared.open(url)
+    }
+
 }
+
