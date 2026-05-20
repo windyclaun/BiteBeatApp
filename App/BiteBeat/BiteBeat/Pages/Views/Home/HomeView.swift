@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var expandedOpacity: Double = 1.0
     @State private var isInteracting = false
     @State private var scrollResetTrigger = UUID()
+    @State private var spreadFactor: CGFloat = 1.0
     
     var body: some View {
         NavigationStack {
@@ -254,6 +255,9 @@ struct HomeView: View {
                 }
                 await viewModel.fetchRecentSongs(using: musicSession)
             }
+            .onAppear {
+                triggerCardStackAnimation()
+            }
         }
     }
     
@@ -264,38 +268,44 @@ struct HomeView: View {
                 if HomeViewModel.defaultPlaylist.count > 2 {
                     LargeSongCard(song: HomeViewModel.defaultPlaylist[2])
                         .scaleEffect(0.88)
-                        .offset(y: -36)
+                        .offset(y: -36 * spreadFactor)
+                        .rotationEffect(.degrees(-4 * (spreadFactor - 1.0)))
                         .opacity(0.4)
                 }
                 
                 if HomeViewModel.defaultPlaylist.count > 1 {
                     LargeSongCard(song: HomeViewModel.defaultPlaylist[1])
                         .scaleEffect(0.94)
-                        .offset(y: -18)
+                        .offset(y: -18 * spreadFactor)
+                        .rotationEffect(.degrees(3 * (spreadFactor - 1.0)))
                         .opacity(0.7)
                 }
                 
                 if let topSong = HomeViewModel.defaultPlaylist.first {
                     LargeSongCard(song: topSong)
+                        .rotationEffect(.degrees(-1.5 * (spreadFactor - 1.0)))
                         .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
                 }
             } else {
                 if viewModel.recentSongs.count > 2 {
                     LargeSongCard(song: viewModel.recentSongs[2])
                         .scaleEffect(0.88)
-                        .offset(y: -36)
+                        .offset(y: -36 * spreadFactor)
+                        .rotationEffect(.degrees(-4 * (spreadFactor - 1.0)))
                         .opacity(0.4)
                 }
                 
                 if viewModel.recentSongs.count > 1 {
                     LargeSongCard(song: viewModel.recentSongs[1])
                         .scaleEffect(0.94)
-                        .offset(y: -18)
+                        .offset(y: -18 * spreadFactor)
+                        .rotationEffect(.degrees(3 * (spreadFactor - 1.0)))
                         .opacity(0.7)
                 }
                 
                 if let topSong = viewModel.recentSongs.first {
                     LargeSongCard(song: topSong)
+                        .rotationEffect(.degrees(-1.5 * (spreadFactor - 1.0)))
                         .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
                 } else {
                     // Placeholder in case song data is empty during initial load
@@ -344,6 +354,29 @@ struct HomeView: View {
                     .fill(Color.pink)
             )
             .shadow(color: .pink.opacity(0.3), radius: 10, y: 6)
+        }
+    }
+    
+    private func triggerCardStackAnimation() {
+        guard !viewModel.isExpanded else { return }
+        
+        // Reset to initial state
+        spreadFactor = 1.0
+        
+        // Brief delay after appearing, then spread out
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            guard !viewModel.isExpanded else { return }
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.55, blendDuration: 0)) {
+                spreadFactor = 2.0 // Cards spread apart (merenggang)
+            }
+            
+            // Snap back together
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                guard !viewModel.isExpanded else { return }
+                withAnimation(.spring(response: 0.55, dampingFraction: 0.65, blendDuration: 0)) {
+                    spreadFactor = 1.0 // Cards close back together (merapat)
+                }
+            }
         }
     }
 }
