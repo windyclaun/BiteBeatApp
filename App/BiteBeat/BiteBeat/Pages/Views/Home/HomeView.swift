@@ -14,10 +14,10 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     // Header Area
                     HStack {
-                        Text("BiteBeat")
+                        Text("Home")
                             .font(.system(.title, design: .rounded))
                             .bold()
-                            .foregroundStyle(.pink)
+                            .foregroundStyle(.primary)
                         
                         Spacer()
                         
@@ -34,24 +34,55 @@ struct HomeView: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 16)
                     
-                    Text(musicSession.isAuthorized ? "Recently Played" : "Default Playlist")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                        .padding(.horizontal, 24)
-                    
-                    if !viewModel.isExpanded {
-                        // Stacked Cards Mode
-                        cardStackView
-                            .onTapGesture {
-                                withAnimation(.spring(response: 0.5, dampingFraction: 0.72, blendDuration: 0)) {
-                                    viewModel.isExpanded = true
-                                }
-                            }
-                            .padding(.horizontal, 24)
+                    HStack {
+                        Text(musicSession.isAuthorized ? "Recently Played" : "Default Playlist")
+                            .font(.headline)
+                            .foregroundStyle(.primary)
                         
                         Spacer()
+                        
+                        if viewModel.isRefreshing {
+                            ProgressView()
+                                .tint(.pink)
+                                .frame(width: 24, height: 24)
+                        } else {
+                            Button {
+                                Task {
+                                    await viewModel.fetchRecentSongs(using: musicSession)
+                                }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(.pink)
+                                    .frame(width: 24, height: 24)
+                            }
+                            .accessibilityIdentifier("RefreshButton")
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    
+                    if !viewModel.isExpanded {
+                        // Stacked Cards Mode (large view) - wrapped in ScrollView for pull-to-refresh
+                        ScrollView(.vertical, showsIndicators: false) {
+                            VStack(spacing: 28) {
+                                cardStackView
+                                    .onTapGesture {
+                                        withAnimation(.spring(response: 0.5, dampingFraction: 0.72, blendDuration: 0)) {
+                                            viewModel.isExpanded = true
+                                        }
+                                    }
+                                
+                                analyzeMoodButton
+                            }
+                            .padding(.horizontal, 24)
+                            .padding(.top, 12)
+                            .padding(.bottom, 24)
+                        }
+                        .refreshable {
+                            await viewModel.fetchRecentSongs(using: musicSession)
+                        }
                     } else {
-                        // Expanded Scrollable List Mode
+                        // Expanded Scrollable List Mode (normal/smaller view)
                         ScrollView(.vertical, showsIndicators: false) {
                             VStack(spacing: 16) {
                                 ForEach(viewModel.recentSongs) { song in
@@ -78,13 +109,32 @@ struct HomeView: View {
                             }
                             .padding(.top, 4)
                         }
+                        .refreshable {
+                            await viewModel.fetchRecentSongs(using: musicSession)
+                        }
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
                     }
                 }
                 
-                analyzeMoodButton
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 24)
+                if viewModel.isExpanded {
+                    // Pinned to the bottom overlay when expanded
+                    analyzeMoodButton
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 24)
+                        .background(
+                            LinearGradient(
+                                colors: [
+                                    Color(uiColor: .systemGroupedBackground).opacity(0),
+                                    Color(uiColor: .systemGroupedBackground).opacity(0.9),
+                                    Color(uiColor: .systemGroupedBackground)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .ignoresSafeArea()
+                        )
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
                 
                 if viewModel.navigateToLoading {
                     AnalysisLoadingView(
@@ -165,40 +215,31 @@ struct HomeView: View {
     private var cardStackView: some View {
         ZStack {
             if viewModel.recentSongs.count > 2 {
-                SongRow(song: viewModel.recentSongs[2])
-                    .padding()
-                    .background(Color(uiColor: .secondarySystemGroupedBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .scaleEffect(0.90)
-                    .offset(y: -24)
+                LargeSongCard(song: viewModel.recentSongs[2])
+                    .scaleEffect(0.88)
+                    .offset(y: -36)
                     .opacity(0.4)
             }
             
             if viewModel.recentSongs.count > 1 {
-                SongRow(song: viewModel.recentSongs[1])
-                    .padding()
-                    .background(Color(uiColor: .secondarySystemGroupedBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .scaleEffect(0.95)
-                    .offset(y: -12)
+                LargeSongCard(song: viewModel.recentSongs[1])
+                    .scaleEffect(0.94)
+                    .offset(y: -18)
                     .opacity(0.7)
             }
             
             if let topSong = viewModel.recentSongs.first {
-                SongRow(song: topSong)
-                    .padding()
-                    .background(Color(uiColor: .secondarySystemGroupedBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                LargeSongCard(song: topSong)
                     .shadow(color: .black.opacity(0.08), radius: 10, y: 5)
             } else {
                 // Placeholder in case song data is empty during initial load
                 ContentUnavailableView("No Songs Found", systemImage: "music.note", description: Text("Please connect your Apple Music."))
-                    .frame(height: 90)
+                    .frame(height: 130)
                     .background(Color(uiColor: .secondarySystemGroupedBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
             }
         }
-        .padding(.top, 24)
+        .padding(.top, 38)
     }
     
     private var analyzeMoodButton: some View {
@@ -211,7 +252,6 @@ struct HomeView: View {
                 viewModel.showConnectAlert = true
             }
         } label: {
-
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Analyze My Mood")
@@ -237,6 +277,34 @@ struct HomeView: View {
             )
             .shadow(color: .pink.opacity(0.3), radius: 10, y: 6)
         }
+    }
+}
+
+struct LargeSongCard: View {
+    let song: BiteMusicTrack
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            ArtworkImage(artworkURL: song.artworkURL, size: 88)
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+            
+            VStack(alignment: .leading, spacing: 6) {
+                Text(song.title)
+                    .font(.title3.bold())
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                
+                Text(song.artistName)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+        }
+        .padding(18)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 }
 
