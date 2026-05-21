@@ -195,5 +195,6 @@ struct EndingView: View {
         description: "Nasi uduk gurih wangi pandan disajikan hangat pakai ayam goreng kuning renyah, tempe garing, lalapan segar, plus sambal terasi ulek yang pedasnya mantap!",
         systemImage: "flame.fill",
         gradientColors: ["orange", "red"]
+        
     ))
 }
