@@ -7,6 +7,7 @@ struct RotatingStarburst: View {
 
     var body: some View {
         Starburst(size: size, center: center)
+            .frame(width: size.width, height: size.height)
             .rotationEffect(
                 .degrees(isAnimating ? 360 : 0),
                 anchor: UnitPoint(x: center.x / size.width, y: center.y / size.height)
