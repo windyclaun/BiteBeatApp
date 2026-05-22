@@ -1,9 +1,9 @@
 import Foundation
-import MusicKit
+import BiteBeatMusic
 import SwiftUI
 import FoundationModels
 
-// Model data buat makanan
+// Data model for a recommended meal
 public struct Meal: Identifiable, Hashable, Sendable {
     public let id: UUID
     public let title: String
@@ -12,10 +12,10 @@ public struct Meal: Identifiable, Hashable, Sendable {
     public let calories: String
     public let description: String
     public let systemImage: String
-    public let gradientColors: [String] // Nama warna gradient biar gampang diconvert ke SwiftUI Color
+    public let gradientColors: [String] // Color name strings for generating SwiftUI gradients
     public let imageUrl: String
     
-    public init(
+    nonisolated public init(
         title: String,
         price: String,
         location: String,
@@ -40,7 +40,7 @@ public struct Meal: Identifiable, Hashable, Sendable {
         return title
     }
     
-    // Bersihin nama jarak di teks lokasi
+    // Cleans up any trailing distance labels from the restaurant location
     public var restaurantName: String {
         if let index = location.firstIndex(of: "(") {
             return String(location[..<index]).trimmingCharacters(in: .whitespaces)
@@ -48,7 +48,7 @@ public struct Meal: Identifiable, Hashable, Sendable {
         return location
     }
     
-    // Helper buat convert array string ke SwiftUI Color
+    // Converts color name strings into SwiftUI Color instances
     public var swiftUIColors: [Color] {
         gradientColors.map { colorName in
             switch colorName.lowercased() {
@@ -104,16 +104,55 @@ public final class MusicToFoodAnalyzer: Sendable {
         self.mode = mode
     }
     
-    // Fungsi utama buat nerjemahin list lagu ke vibe makanan (dapat menu utama & 2 alternatif)
-    public func analyze(songs: [Song]) async throws -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) {
-        let songsList = songs.isEmpty ? "No recent songs, default to soft and calming music." : songs.map { "- \($0.title) by \($0.artistName)" }.joined(separator: "\n")
+    /// Creates a MusicToFoodAnalyzer that grounds recommendations using the local 'foods.json' database asset or creative mode based on UserDefaults.
+    public static func makeDefault() -> MusicToFoodAnalyzer {
+        // 1. Read language preference
+        let storedLanguage = UserDefaults.standard.string(forKey: "analyzerLanguage") ?? "english"
+        let language: AnalyzerLanguage = (storedLanguage == "indonesian") ? .indonesian : .english
+        
+        // 2. Determine mode based on override
+        let storedModeOverride = UserDefaults.standard.string(forKey: "overrideAnalyzerMode") ?? "auto"
+        var mode = AnalyzerMode.creative
+        
+        if storedModeOverride == "forceCreative" {
+            mode = .creative
+        } else {
+            // Attempt to load database
+            if let url = Bundle.main.url(forResource: "foods", withExtension: "json"),
+               let data = try? Data(contentsOf: url),
+               let jsonString = String(data: data, encoding: .utf8) {
+                mode = .database(jsonString: jsonString)
+            }
+        }
+        
+        return MusicToFoodAnalyzer(language: language, mode: mode)
+    }
+    
+    /// Main analysis function that translates tracks into food recommendations (one main, two alternatives) using Apple Intelligence.
+    public func analyze(songs: [BiteMusicTrack]) async throws -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) {
+        let dominantGenres = extractDominantGenres(from: songs)
+        let songsList = songs.isEmpty ? "No recent songs, default to soft and calming music." : songs.map { "- \($0.title) by \($0.artistName) (Genres: \($0.genreNames.joined(separator: ", ")))" }.joined(separator: "\n")
         
         var promptText = """
-        You are a food and music expert. Analyze these recently played songs and recommend 3 food dishes (1 main, 2 alternatives).
+        You are a food and music expert. Analyze the following PLAYLIST ANALYSIS and recommend 3 food dishes (1 main, 2 alternatives) that perfectly match the emotional and sonic vibe of the playlist.
         The output (vibeName, vibeDescription, title, and description) MUST be in \(language.rawValue) language.
         
-        Songs:
+        CRITICAL RULE: You MUST NOT recommend any starch-based street foods (berbahan dasar aci) such as Seblak, Batagor, Siomay, Pempek, Cireng, Cilok, etc. You also MUST NOT recommend any meatballs (Bakso) under any circumstances. Focus on rich and satisfying standard meals or wholesome dishes instead.
+        
+        PLAYLIST ANALYSIS:
+        - Dominant Genres: \(dominantGenres)
+        - Track List:
         \(songsList)
+        
+        DESCRIPTIONS STYLE RULE:
+        For each recommended meal, the 'description' field MUST be a highly personalized, creative, and emotionally resonant explanation written in \(language.rawValue). DO NOT map one food to just one song. Instead, treat the ENTIRE playlist as a single emotional journey. The food recommendation must synthesize the overall vibe of MULTIPLE songs together.
+        
+        Crucially, inside the description, you MUST explicitly mention SEVERAL different song titles and artists from the provided song list to explain how they collectively inspire this dish. Furthermore, use your foundation model knowledge to INFER and QUOTE 1-2 lines of actual famous lyrics from these specific songs to explain the mood and vibe. 
+        
+        Example narrative structure:
+        "This dish is the perfect culinary match for your entire playlist's [Vibe/Mood, e.g., sad/chill] atmosphere, guided by dominant genres like \(dominantGenres). Just as '[Song Title 1]' by [Artist 1] brings a feeling of [emotion], and '[Song Title 2]' by [Artist 2] adds a touch of [emotion]—especially with lyrics like '[Quote actual lyrics]'—this food combines [Food Characteristic 1] and [Food Characteristic 2] to [cheer you up / help you embrace the mood]."
+        
+        Be highly creative and empathetic. Synthesize the multiple songs into a cohesive culinary story. Do not just use a dry recipe description.
         """
         
         switch mode {
@@ -206,6 +245,24 @@ public final class MusicToFoodAnalyzer: Sendable {
         }
         
         return (result.vibeName, result.vibeDescription, mainMeal, alternatives)
+    }
+    
+    private func extractDominantGenres(from songs: [BiteMusicTrack]) -> String {
+        var genreCounts: [String: Int] = [:]
+        for song in songs {
+            for genre in song.genreNames {
+                genreCounts[genre, default: 0] += 1
+            }
+        }
+        
+        let sortedGenres = genreCounts.sorted { $0.value > $1.value }
+        let topGenres = sortedGenres.prefix(3).map { $0.key }
+        
+        if topGenres.isEmpty {
+            return "Mixed / Unknown Vibe"
+        } else {
+            return topGenres.joined(separator: ", ")
+        }
     }
 }
 

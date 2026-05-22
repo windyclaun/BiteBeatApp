@@ -50,16 +50,6 @@
     "price": "Rp 25.000"
   },
   {
-    "title": "Bakso Urat Super Besar",
-    "location": "Bakso Boedjangan",
-    "price": "Rp 35.000"
-  },
-  {
-    "title": "Bakso Malang Komplit",
-    "location": "Bakso Presiden",
-    "price": "Rp 30.000"
-  },
-  {
     "title": "Kwetiau Goreng Sapi",
     "location": "Kwetiau Akang",
     "price": "Rp 45.000"
@@ -135,29 +125,9 @@
     "price": "Rp 20.000"
   },
   {
-    "title": "Pempek Kapal Selam",
-    "location": "Pempek Megaria",
-    "price": "Rp 35.000"
-  },
-  {
-    "title": "Batagor Bumbu Kacang",
-    "location": "Batagor Kingsley",
-    "price": "Rp 40.000"
-  },
-  {
-    "title": "Siomay Ikan Tenggiri",
-    "location": "Siomay Pink",
-    "price": "Rp 30.000"
-  },
-  {
     "title": "Martabak Manis Keju Coklat",
     "location": "Martabak Pecenongan",
     "price": "Rp 85.000"
-  },
-  {
-    "title": "Seblak Jeletot Ekstra Pedas",
-    "location": "Seblak Jeletot Mpok",
-    "price": "Rp 25.000"
   },
   {
     "title": "Gudeg Jogja Komplit",

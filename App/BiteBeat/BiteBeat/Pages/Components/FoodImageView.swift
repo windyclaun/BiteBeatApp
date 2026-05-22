@@ -5,7 +5,7 @@ public final class FoodImageService {
     
     private init() {}
     
-    // Query Wikipedia/Wikimedia API secara asinkron tanpa api key
+    // Queries Wikipedia/Wikimedia API asynchronously without an API key
     public func fetchImage(for query: String) async -> String? {
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
         let urlString = "https://id.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=\(encodedQuery)&gsrlimit=1&prop=pageimages&format=json&pithumbsize=600"
@@ -27,7 +27,7 @@ public final class FoodImageService {
                 }
             }
         } catch {
-            print("Gagal fetch gambar Wikipedia: \(error)")
+            print("Failed to fetch Wikipedia image: \(error)")
         }
         
         return nil
@@ -65,11 +65,11 @@ struct FoodImageView: View {
             }
         }
         .task {
-            // Coba fetch gambar dari API Publik Wikipedia
+            // Try to fetch image from Wikipedia Public API
             if let liveUrl = await FoodImageService.shared.fetchImage(for: wikipediaQuery) {
                 activeImageUrl = liveUrl
             } else {
-                // Gunakan Unsplash fallback jika gagal
+                // Use Unsplash fallback image if Wikipedia API fails
                 activeImageUrl = fallbackUrl
             }
             isLoading = false

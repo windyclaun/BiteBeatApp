@@ -3,17 +3,16 @@
 //  BiteBeat
 //
 
-import MusicKit
 import SwiftUI
 
 struct ArtworkImage: View {
-    let artwork: Artwork?
+    let artworkURL: URL?
     var size: CGFloat = 56
 
     var body: some View {
         Group {
-            if let artwork, let url = artwork.url(width: Int(size * 2), height: Int(size * 2)) {
-                AsyncImage(url: url) { phase in
+            if let artworkURL {
+                AsyncImage(url: artworkURL) { phase in
                     switch phase {
                     case .success(let image):
                         image.resizable().scaledToFill()
