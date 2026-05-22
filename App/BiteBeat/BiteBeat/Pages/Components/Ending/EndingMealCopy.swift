@@ -2,7 +2,7 @@ import SwiftUI
 
 struct EndingMealCopy: View {
     let mealTitle: String
-
+    let mealCrazyFunDescription: String
     var body: some View {
         VStack(spacing: 20) {
             Text(mealTitle)
@@ -12,7 +12,7 @@ struct EndingMealCopy: View {
                 .lineLimit(2)
                 .minimumScaleFactor(0.78)
 
-            Text("Warning - this meal may trigger\nspontaneous shoulder dancing.")
+            Text(mealCrazyFunDescription)
                 .font(.system(size: 17, weight: .regular, design: .rounded))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
