@@ -413,6 +413,7 @@ public final class AnalysisLoadingViewModel {
                 location: "Warung Kebon (0.1 km)",
                 calories: "500 kcal",
                 description: "Nasi goreng kecap tradisional dengan telur mata sapi renyah, kerupuk, dan irisan mentimun segar.",
+                crazyFunDescription: "Warning — this meal may trigger spontaneous shoulder dancing.",
                 systemImage: "flame.fill",
                 gradientColors: ["orange", "red"]
             ),

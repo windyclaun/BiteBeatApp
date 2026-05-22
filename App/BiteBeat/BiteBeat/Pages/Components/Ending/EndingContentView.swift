@@ -1,27 +1,29 @@
 import BiteBeatMusic
 import SwiftUI
 
-struct EndingView: View {
-    @State private var viewModel: EndingViewModel
+struct EndingContentView: View {
+    let meal: Meal
+    let greeting: String
 
-    init(selectedMeal: Meal) {
-        _viewModel = State(initialValue: EndingViewModel(selectedMeal: selectedMeal))
-    }
 
     var body: some View {
-        ZStack {
-            EndingGradientBackground()
-                .ignoresSafeArea()
+        VStack(spacing: 0) {
+            Spacer(minLength: 106)
 
-            EndingContentView(
-                meal: viewModel.selectedMeal,
-                greeting: viewModel.enjoymentGreeting
-            )
+            EndingGreetingText(greeting: greeting)
+
+            EndingHeroImage(meal: meal)
+                .padding(.top, 38)
+
+            EndingMealCopy(mealTitle: meal.title, mealCrazyFunDescription: meal.crazyFunDescription)
+                .padding(.top, 36)
+
+            Spacer(minLength: 32)
+
+            EndingActionButton()
+                .padding(.horizontal, 38)
         }
-        .navigationBarBackButtonHidden()
-        .onAppear {
-            viewModel.handleOnAppear()
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
