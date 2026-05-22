@@ -1,56 +1,46 @@
 import SwiftUI
 
 struct Starburst: View {
+    enum Direction {
+        case clockwise
+        case counterclockwise
+    }
+
     let size: CGSize
     let center: CGPoint
+    let direction: Direction
 
     private var rayLength: CGFloat {
         hypot(size.width, size.height)
     }
 
+    private var rays: [StarburstRay] {
+        switch direction {
+        case .clockwise:
+            [
+                StarburstRay(startAngle: 188, endAngle: 216, opacity: 0.34),
+                StarburstRay(startAngle: 332, endAngle: 358, opacity: 0.26),
+                StarburstRay(startAngle: 56, endAngle: 72, opacity: 0.12)
+            ]
+        case .counterclockwise:
+            [
+                StarburstRay(startAngle: 146, endAngle: 172, opacity: 0.22),
+                StarburstRay(startAngle: 18, endAngle: 46, opacity: 0.18),
+                StarburstRay(startAngle: 248, endAngle: 268, opacity: 0.14)
+            ]
+        }
+    }
+
     var body: some View {
         ZStack {
-            BurstRay(
-                center: center,
-                first: point(angle: 188, length: rayLength),
-                second: point(angle: 216, length: rayLength),
-                opacity: 0.34
-            )
-
-            BurstRay(
-                center: center,
-                first: point(angle: 146, length: rayLength),
-                second: point(angle: 172, length: rayLength),
-                opacity: 0.22
-            )
-
-            BurstRay(
-                center: center,
-                first: point(angle: 332, length: rayLength),
-                second: point(angle: 358, length: rayLength),
-                opacity: 0.26
-            )
-
-            BurstRay(
-                center: center,
-                first: point(angle: 18, length: rayLength),
-                second: point(angle: 46, length: rayLength),
-                opacity: 0.18
-            )
-
-            BurstRay(
-                center: center,
-                first: point(angle: 56, length: rayLength),
-                second: point(angle: 72, length: rayLength),
-                opacity: 0.12
-            )
-
-            BurstRay(
-                center: center,
-                first: point(angle: 248, length: rayLength),
-                second: point(angle: 268, length: rayLength),
-                opacity: 0.14
-            )
+            ForEach(rays) { ray in
+                BurstRay(
+                    center: center,
+                    first: point(angle: ray.startAngle, length: rayLength),
+                    second: point(angle: ray.endAngle, length: rayLength),
+                    opacity: ray.opacity
+                )
+            }
         }
         .frame(width: size.width, height: size.height)
     }
@@ -62,4 +52,11 @@ struct Starburst: View {
             y: center.y + sin(radians) * length
         )
     }
+}
+
+private struct StarburstRay: Identifiable {
+    let id = UUID()
+    let startAngle: Double
+    let endAngle: Double
+    let opacity: Double
 }
