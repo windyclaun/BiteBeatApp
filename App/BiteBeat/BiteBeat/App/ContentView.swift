@@ -57,11 +57,11 @@ private struct AppleIntelligencePermissionView: View {
                 Spacer()
 
                 Image("LogoApp")
-                    .font(.system(size: 80, weight: .bold))
+                    .biteBeatFont(.custom(80), weight: .bold)
                     .foregroundStyle(.white)
 
                 Text("BiteBeat")
-                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .biteBeatFont(.custom(38), weight: .bold)
                     .foregroundStyle(.white)
 
                 Spacer()
@@ -73,16 +73,16 @@ private struct AppleIntelligencePermissionView: View {
 
             VStack(spacing: 20) {
                 Image(systemName: "apple.intelligence")
-                    .font(.system(size: 44, weight: .semibold))
+                    .biteBeatFont(.custom(44), weight: .semibold)
                     .foregroundStyle(.pink)
 
                 Text("Apple Intelligence")
-                    .font(.headline)
+                    .biteBeatFont(.headline)
                     .fontWeight(.bold)
                     .foregroundStyle(.primary)
 
                 Text("BiteBeat uses on-device Apple Intelligence to understand your music vibe and turn it into a food recommendation.")
-                    .font(.subheadline)
+                    .biteBeatFont(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 10)
@@ -109,7 +109,7 @@ private struct AppleIntelligencePermissionView: View {
 
     private var statusBanner: some View {
         Label(availabilityMessage, systemImage: availabilityIcon)
-            .font(.caption)
+            .biteBeatFont(.caption)
             .foregroundStyle(availabilityColor)
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -123,7 +123,7 @@ private struct AppleIntelligencePermissionView: View {
                     openSystemSettings()
                 } label: {
                     Text("Open Settings")
-                        .font(.subheadline)
+                        .biteBeatFont(.subheadline)
                         .bold()
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
@@ -138,7 +138,7 @@ private struct AppleIntelligencePermissionView: View {
                     }
                 } label: {
                     Text("Continue")
-                        .font(.subheadline)
+                        .biteBeatFont(.subheadline)
                         .bold()
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
@@ -216,15 +216,15 @@ private struct AppleIntelligenceInfoView: View {
 
             VStack(spacing: 20) {
                 Image(systemName: "sparkles")
-                    .font(.system(size: 44, weight: .semibold))
+                    .biteBeatFont(.custom(44), weight: .semibold)
                     .foregroundStyle(.pink)
 
                 Text("Apple Intelligence")
-                    .font(.headline)
+                    .biteBeatFont(.headline)
                     .fontWeight(.bold)
 
                 Text("BiteBeat uses Apple Intelligence on supported devices to match your music vibe with food recommendations.")
-                    .font(.subheadline)
+                    .biteBeatFont(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(2)
@@ -235,7 +235,7 @@ private struct AppleIntelligenceInfoView: View {
                     }
                 } label: {
                     Text("Continue")
-                        .font(.subheadline)
+                        .biteBeatFont(.subheadline)
                         .bold()
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)

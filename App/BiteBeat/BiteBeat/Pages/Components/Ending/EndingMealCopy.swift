@@ -9,7 +9,7 @@ struct EndingMealCopy: View {
     var body: some View {
         VStack(spacing: 16) {
             Text(meal.title)
-                .font(.system(size: 29, weight: .bold, design: .rounded))
+                .biteBeatFont(.custom(29), weight: .bold)
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -17,7 +17,7 @@ struct EndingMealCopy: View {
 
             VStack(spacing: 8) {
                 Text(meal.crazyFunDescription)
-                    .font(.system(size: 17, weight: .regular, design: .rounded))
+                    .biteBeatFont(.custom(17), weight: .regular)
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
@@ -27,7 +27,7 @@ struct EndingMealCopy: View {
                     isShowingDetails = true
                 } label: {
                     Text("See more")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .biteBeatFont(.custom(15), weight: .semibold)
                         .foregroundStyle(.white)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 6)

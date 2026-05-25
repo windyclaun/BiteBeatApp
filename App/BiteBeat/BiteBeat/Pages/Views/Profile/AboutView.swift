@@ -35,7 +35,7 @@ struct AboutView: View {
                     .shadow(color: .red.opacity(0.3), radius: 8, y: 4)
                 
                 Text("BiteBeat")
-                    .font(.largeTitle.bold())
+                    .biteBeatFont(.largeTitle, weight: .bold)
                     .tracking(2)
             }
             .contentShape(Rectangle()) // Make the whole area tappable
@@ -52,19 +52,19 @@ struct AboutView: View {
             VStack(spacing: 16) {
                 VStack(spacing: 4) {
                     Text("Created By")
-                        .font(.headline)
+                        .biteBeatFont(.headline)
                         .foregroundStyle(.secondary)
                         .textCase(.uppercase)
                     
                     Text("Team pUcak Gunung")
-                        .font(.title3.bold())
+                        .biteBeatFont(.title3, weight: .bold)
                         .foregroundStyle(.pink)
                 }
                 
                 VStack(spacing: 12) {
                     ForEach(teamMembers, id: \.self) { member in
                         Text(member)
-                            .font(.title3.weight(.medium))
+                            .biteBeatFont(.title3, weight: .medium)
                             .foregroundStyle(.primary)
                             .padding(.vertical, 8)
                             .frame(maxWidth: .infinity)

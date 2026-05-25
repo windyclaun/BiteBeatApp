@@ -35,12 +35,12 @@ struct EndingMealDetailSheet: View {
     private var headerView: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(meal.title)
-                .font(.title2.bold())
+                .biteBeatFont(.title2, weight: .bold)
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text(meal.restaurantName)
-                .font(.subheadline)
+                .biteBeatFont(.subheadline)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -56,17 +56,17 @@ struct EndingMealDetailSheet: View {
     private func factChip(title: String, value: String, systemImage: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: systemImage)
-                .font(.subheadline.weight(.semibold))
+                .biteBeatFont(.subheadline, weight: .semibold)
                 .foregroundStyle(.pink)
                 .frame(width: 24, height: 24)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption)
+                    .biteBeatFont(.caption)
                     .foregroundStyle(.secondary)
 
                 Text(value)
-                    .font(.subheadline.weight(.semibold))
+                    .biteBeatFont(.subheadline, weight: .semibold)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -80,11 +80,11 @@ struct EndingMealDetailSheet: View {
     private func detailSection(title: String, text: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.headline)
+                .biteBeatFont(.headline)
                 .foregroundStyle(.primary)
 
             Text(text)
-                .font(.body)
+                .biteBeatFont(.body)
                 .foregroundStyle(.secondary)
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)

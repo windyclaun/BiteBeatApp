@@ -95,7 +95,7 @@ struct FoodImageView: View {
                 .fill(.quaternary.opacity(0.4))
             
             Image(systemName: "fork.knife.circle.fill")
-                .font(.largeTitle)
+                .biteBeatFont(.largeTitle)
                 .foregroundStyle(.pink)
         }
     }

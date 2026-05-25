@@ -21,7 +21,7 @@ struct HomeView: View {
                     // Header Area
                     HStack {
                         Text("Home")
-                            .font(.system(.title, design: .rounded))
+                            .biteBeatFont(.title)
                             .bold()
                             .foregroundStyle(.primary)
                         
@@ -42,7 +42,7 @@ struct HomeView: View {
                     
                     HStack {
                         Text(musicSession.isAuthorized ? "Recently Played" : "Default Playlist")
-                            .font(.headline)
+                            .biteBeatFont(.headline)
                             .foregroundStyle(.primary)
                         
                         Spacer()
@@ -58,7 +58,7 @@ struct HomeView: View {
                                 }
                             } label: {
                                 Image(systemName: "arrow.clockwise")
-                                    .font(.subheadline.bold())
+                                    .biteBeatFont(.subheadline, weight: .bold)
                                     .foregroundStyle(.pink)
                                     .frame(width: 24, height: 24)
                             }
@@ -373,18 +373,18 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     if let selectedMeal = viewModel.selectedMealToday {
                         Text(selectedMeal.title)
-                            .font(.headline)
+                            .biteBeatFont(.headline)
                             .bold()
                             .lineLimit(1)
                         Text("Tap to view food details")
-                            .font(.caption)
+                            .biteBeatFont(.caption)
                             .opacity(0.9)
                     } else {
                         Text("Analyze My Mood")
-                            .font(.headline)
+                            .biteBeatFont(.headline)
                             .bold()
                         Text("Get food recommendation now !")
-                            .font(.caption)
+                            .biteBeatFont(.caption)
                             .opacity(0.9)
                     }
                 }
@@ -393,7 +393,7 @@ struct HomeView: View {
                 Spacer()
                 
                 Image(systemName: "chevron.right")
-                    .font(.title3.bold())
+                    .biteBeatFont(.title3, weight: .bold)
                     .foregroundStyle(.white)
             }
             .padding(.horizontal, 24)
@@ -523,16 +523,16 @@ struct HomeView: View {
     ) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 22, weight: .semibold))
+                .biteBeatFont(.custom(22), weight: .semibold)
                 .foregroundStyle(.red)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(subtitle)
-                    .font(.system(size: 11, weight: .light))
+                    .biteBeatFont(.custom(11), weight: .light)
                     .foregroundStyle(.red)
 
                 Text(title)
-                    .font(.system(size: 11, weight: .bold))
+                    .biteBeatFont(.custom(11), weight: .bold)
                     .foregroundStyle(.red)
             }
 
@@ -570,12 +570,12 @@ struct LargeSongCard: View {
             
             VStack(alignment: .leading, spacing: 6) {
                 Text(song.title)
-                    .font(.title3.bold())
+                    .biteBeatFont(.title3, weight: .bold)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 
                 Text(song.artistName)
-                    .font(.subheadline)
+                    .biteBeatFont(.subheadline)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }

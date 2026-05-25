@@ -46,7 +46,7 @@ struct ProfileView: View {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.title3.weight(.semibold))
+                        .biteBeatFont(.title3, weight: .semibold)
                         .foregroundStyle(.primary)
                         .frame(width: 48, height: 48)
                         .background(.white.opacity(0.9), in: Circle())
@@ -60,7 +60,7 @@ struct ProfileView: View {
                     AboutView()
                 } label: {
                     Image(systemName: "info.circle.fill")
-                        .font(.title3.weight(.semibold))
+                        .biteBeatFont(.title3, weight: .semibold)
                         .foregroundStyle(.pink)
                         .frame(width: 48, height: 48)
                         .background(.white.opacity(0.9), in: Circle())
@@ -75,23 +75,23 @@ struct ProfileView: View {
             } label: {
                 VStack(spacing: 10) {
                     Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 96))
+                        .biteBeatFont(.custom(96))
                         .symbolRenderingMode(.hierarchical)
                         .foregroundStyle(.pink)
 
                     HStack(spacing: 8) {
                         Text("Apple Music User")
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .biteBeatFont(.custom(28), weight: .bold)
                             .foregroundStyle(.primary)
                             .lineLimit(1)
 
                         Image(systemName: "chevron.right")
-                            .font(.headline.weight(.semibold))
+                            .biteBeatFont(.headline, weight: .semibold)
                             .foregroundStyle(.primary)
                     }
 
                     Text("Connected with Apple Music")
-                        .font(.subheadline)
+                        .biteBeatFont(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)
@@ -108,12 +108,12 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .firstTextBaseline) {
                 Text("History")
-                    .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .biteBeatFont(.custom(30), weight: .bold)
 
                 Spacer()
 
                 Text("Recent picks")
-                    .font(.subheadline)
+                    .biteBeatFont(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
@@ -132,14 +132,14 @@ struct ProfileView: View {
     private var emptyHistoryCard: some View {
         HStack(spacing: 14) {
             Image(systemName: "fork.knife.circle.fill")
-                .font(.system(size: 42))
+                .biteBeatFont(.custom(42))
                 .foregroundStyle(.pink)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("No food history yet")
-                    .font(.headline.bold())
+                    .biteBeatFont(.headline, weight: .bold)
                 Text("Your daily picks will appear here.")
-                    .font(.subheadline)
+                    .biteBeatFont(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
@@ -163,12 +163,12 @@ struct ProfileView: View {
 
             VStack(alignment: .leading, spacing: 5) {
                 Text(selection.meal.title)
-                    .font(.title3.bold())
+                    .biteBeatFont(.title3, weight: .bold)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
                 Text(selection.selectedAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).year()))
-                    .font(.subheadline)
+                    .biteBeatFont(.subheadline)
                     .foregroundStyle(.secondary)
             }
 
@@ -183,14 +183,14 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
                 Image(systemName: "apple.intelligence")
-                    .font(.title2)
+                    .biteBeatFont(.title2)
                     .foregroundStyle(.pink)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Apple Intelligence Vibe")
-                        .font(.headline.bold())
+                        .biteBeatFont(.headline, weight: .bold)
                     Text("Dominant Music Persona")
-                        .font(.caption)
+                        .biteBeatFont(.caption)
                         .foregroundStyle(.secondary)
                 }
 
@@ -202,17 +202,17 @@ struct ProfileView: View {
                     ProgressView()
                         .tint(.pink)
                     Text("Analyzing your taste...")
-                        .font(.subheadline)
+                        .biteBeatFont(.subheadline)
                         .foregroundStyle(.secondary)
                 }
                 .padding(.vertical, 8)
             } else {
                 Text(viewModel.dominantVibeName)
-                    .font(.title3.bold())
+                    .biteBeatFont(.title3, weight: .bold)
                     .foregroundStyle(.pink.gradient)
 
                 Text(viewModel.dominantVibeDescription)
-                    .font(.footnote)
+                    .biteBeatFont(.footnote)
                     .foregroundStyle(.secondary)
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
@@ -229,7 +229,7 @@ struct ProfileView: View {
                 viewModel.openSystemSettings()
             } label: {
                 Label("Disconnect Apple Music", systemImage: "rectangle.portrait.and.arrow.right")
-                    .font(.subheadline.bold())
+                    .biteBeatFont(.subheadline, weight: .bold)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
             }
@@ -238,7 +238,7 @@ struct ProfileView: View {
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
             Text("Apple Music authorization is managed securely by iOS. To fully revoke access, disable Media & Apple Music in system settings for BiteBeat.")
-                .font(.caption)
+                .biteBeatFont(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -255,7 +255,7 @@ private struct ProfileDetailsSheet: View {
         NavigationStack {
             VStack(spacing: 34) {
                 Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 104))
+                    .biteBeatFont(.custom(104))
                     .symbolRenderingMode(.hierarchical)
                     .foregroundStyle(.pink)
                     .padding(.top, 20)
@@ -278,7 +278,7 @@ private struct ProfileDetailsSheet: View {
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.left")
-                            .font(.headline.weight(.semibold))
+                            .biteBeatFont(.headline, weight: .semibold)
                     }
                 }
 
@@ -295,18 +295,18 @@ private struct ProfileDetailsSheet: View {
     private func detailRow(title: String, value: String) -> some View {
         HStack {
             Text(title)
-                .font(.body)
+                .biteBeatFont(.body)
                 .foregroundStyle(.primary)
 
             Spacer()
 
             Text(value)
-                .font(.body)
+                .biteBeatFont(.body)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
 
             Image(systemName: "chevron.right")
-                .font(.subheadline.weight(.semibold))
+                .biteBeatFont(.subheadline, weight: .semibold)
                 .foregroundStyle(.tertiary)
         }
         .padding(.vertical, 15)

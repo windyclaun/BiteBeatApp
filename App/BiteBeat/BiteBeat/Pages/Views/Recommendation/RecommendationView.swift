@@ -47,7 +47,7 @@ struct RecommendationView: View {
     private var mainRecommendationView: some View {
         VStack(spacing: 0) {
             Text("Your Best Lunch Match")
-                .font(.system(size: 21, weight: .bold, design: .rounded))
+                .biteBeatFont(.custom(21), weight: .bold)
                 .foregroundStyle(.black)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 34)
@@ -65,7 +65,7 @@ struct RecommendationView: View {
     private func mealSummary(for meal: Meal) -> some View {
         VStack(spacing: 18) {
             Text(meal.title)
-                .font(.system(size: 29, weight: .bold, design: .rounded))
+                .biteBeatFont(.custom(29), weight: .bold)
                 .foregroundStyle(.black)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -79,7 +79,7 @@ struct RecommendationView: View {
             .frame(maxWidth: .infinity)
 
             Text(meal.description)
-                .font(.system(size: 16, weight: .regular, design: .rounded))
+                .biteBeatFont(.custom(16), weight: .regular)
                 .foregroundStyle(Color(uiColor: .systemGray))
                 .lineSpacing(3)
                 .multilineTextAlignment(.center)
@@ -94,7 +94,7 @@ struct RecommendationView: View {
                 viewModel.selectMainMeal()
             } label: {
                 Text("Yay !")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .biteBeatFont(.custom(16), weight: .bold)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
@@ -107,7 +107,7 @@ struct RecommendationView: View {
                 viewModel.toggleShowAlternatives(show: true)
             } label: {
                 Text("Nay !")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .biteBeatFont(.custom(16), weight: .bold)
                     .foregroundStyle(.pink)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
@@ -125,11 +125,11 @@ struct RecommendationView: View {
         VStack(spacing: 24) {
             VStack(spacing: 8) {
                 Text("Pick Another Match")
-                    .font(.system(size: 21, weight: .bold, design: .rounded))
+                    .biteBeatFont(.custom(21), weight: .bold)
                     .foregroundStyle(.black)
 
                 Text("Choose one meal that fits your mood better.")
-                    .font(.subheadline)
+                    .biteBeatFont(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
             }
@@ -160,7 +160,7 @@ struct RecommendationView: View {
                 viewModel.selectAlternativeMeal()
             } label: {
                 Text("Yay !")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .biteBeatFont(.custom(16), weight: .bold)
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
@@ -173,7 +173,7 @@ struct RecommendationView: View {
                 viewModel.resetToMainSelection()
             } label: {
                 Text("Back to Best Match")
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .biteBeatFont(.custom(15), weight: .bold)
                     .foregroundStyle(.pink)
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
@@ -200,14 +200,14 @@ struct RecommendationView: View {
             mealHeroImage(for: meal, size: 88)
 
             Text(meal.title)
-                .font(.caption.bold())
+                .biteBeatFont(.caption, weight: .bold)
                 .foregroundStyle(isSelected ? .pink : .black)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .frame(height: 34)
 
             Text(meal.price)
-                .font(.caption2.weight(.semibold))
+                .biteBeatFont(.caption2, weight: .semibold)
                 .foregroundStyle(.secondary)
         }
         .padding(12)
@@ -234,12 +234,12 @@ struct RecommendationView: View {
     private func infoItem(systemImage: String, text: String) -> some View {
         HStack(spacing: 6) {
             Image(systemName: systemImage)
-                .font(.system(size: 16, weight: .semibold))
+                .biteBeatFont(.custom(16), weight: .semibold)
                 .foregroundStyle(.pink)
                 .frame(width: 20, height: 20)
 
             Text(text)
-                .font(.system(size: 12, weight: .regular, design: .rounded))
+                .biteBeatFont(.custom(12), weight: .regular)
                 .foregroundStyle(Color(uiColor: .systemGray))
                 .lineLimit(1)
                 .minimumScaleFactor(0.68)

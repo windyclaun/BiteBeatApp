@@ -33,11 +33,11 @@ struct AuthorizationView: View {
             Spacer()
             
             Image("LogoApp")
-                .font(.system(size: 80, weight: .bold))
+                .biteBeatFont(.custom(80), weight: .bold)
                 .foregroundStyle(.white)
             
             Text("BiteBeat")
-                .font(.system(size: 38, weight: .bold, design: .rounded))
+                .biteBeatFont(.custom(38), weight: .bold)
                 .foregroundStyle(.white)
             
             Spacer()
@@ -53,12 +53,12 @@ struct AuthorizationView: View {
     private var permissionDialogView: some View {
         VStack(spacing: 20) {
             Text("Connect Apple Music")
-                .font(.headline)
+                .biteBeatFont(.headline)
                 .fontWeight(.bold)
                 .foregroundStyle(.primary)
             
             Text("Allow BiteBeat to access your Apple Music activity to analyze your listening mood")
-                .font(.subheadline)
+                .biteBeatFont(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 10)
@@ -93,7 +93,7 @@ struct AuthorizationView: View {
         let message = viewModel.getStatusBannerMessage(for: musicSession.authorizationStatus)
         if !message.isEmpty {
             Label(message, systemImage: "exclamationmark.triangle.fill")
-                .font(.caption)
+                .biteBeatFont(.caption)
                 .foregroundStyle(.orange)
                 .padding(12)
                 .background(.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
@@ -116,7 +116,7 @@ struct AuthorizationView: View {
                             .tint(.white)
                     } else {
                         Text("Connect Apple Music")
-                            .font(.subheadline)
+                            .biteBeatFont(.subheadline)
                             .bold()
                     }
                 }
@@ -135,7 +135,7 @@ struct AuthorizationView: View {
                 }
             } label: {
                 Text("Not Now")
-                    .font(.subheadline)
+                    .biteBeatFont(.subheadline)
                     .foregroundStyle(.secondary)
                     .bold()
                     .frame(maxWidth: .infinity)

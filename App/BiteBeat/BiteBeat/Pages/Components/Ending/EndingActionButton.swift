@@ -6,7 +6,7 @@ struct EndingActionButton: View {
             NotificationCenter.default.post(name: NSNotification.Name("ResetHome"), object: nil)
         } label: {
             Text("Let's Eat !")
-                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .biteBeatFont(.custom(17), weight: .bold)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 54)

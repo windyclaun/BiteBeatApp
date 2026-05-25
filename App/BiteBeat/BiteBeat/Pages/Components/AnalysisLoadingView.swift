@@ -74,13 +74,13 @@ struct AnalysisLoadingView: View {
     private var statusAndBrandingView: some View {
         VStack(spacing: 8) {
             Text("Apple Intelligence")
-                .font(.headline)
+                .biteBeatFont(.headline)
                 .foregroundStyle(.pink.gradient)
                 .textCase(.uppercase)
                 .tracking(2.0)
             
             Text(viewModel.loadingStatus)
-                .font(.headline)
+                .biteBeatFont(.headline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.primary)
                 .contentTransition(.identity)
@@ -94,7 +94,7 @@ struct AnalysisLoadingView: View {
             onCancel()
         } label: {
             Text("Cancel")
-                .font(.subheadline.bold())
+                .biteBeatFont(.subheadline, weight: .bold)
                 .foregroundStyle(.red)
                 .padding(.horizontal, 28)
                 .padding(.vertical, 12)
@@ -135,7 +135,7 @@ struct TargetPlayLoadingAnimation: View {
                 .scaleEffect(pulseScale * impactScale)
 
             Image(systemName: "play.fill")
-                .font(.system(size: 28, weight: .bold))
+                .biteBeatFont(.custom(28), weight: .bold)
                 .foregroundStyle(.red)
                 .offset(x: 2)
                 .scaleEffect(impactScale)
@@ -212,11 +212,11 @@ struct SongPillView: View {
             
             VStack(alignment: .leading, spacing: 1) {
                 Text(track.title)
-                    .font(.caption2.bold())
+                    .biteBeatFont(.caption2, weight: .bold)
                     .lineLimit(1)
                     .foregroundStyle(.primary)
                 Text(track.artistName)
-                    .font(.system(size: 8))
+                    .biteBeatFont(.custom(8))
                     .lineLimit(1)
                     .foregroundStyle(.secondary)
             }
@@ -273,7 +273,7 @@ struct SongPillView: View {
             .fill(Color.pink.opacity(0.1))
             .overlay {
                 Image(systemName: "music.note")
-                    .font(.caption)
+                    .biteBeatFont(.caption)
                     .foregroundStyle(.pink)
             }
             .frame(width: 24, height: 24)
