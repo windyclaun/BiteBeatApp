@@ -192,8 +192,8 @@ private struct AppleIntelligencePermissionView: View {
     }
 
     private func openSystemSettings() {
-        if let siriURL = URL(string: "App-Prefs:root=SIRI") {
-            UIApplication.shared.open(siriURL, options: [:]) { success in
+        if let globalSettingsURL = URL(string: "App-Prefs:") {
+            UIApplication.shared.open(globalSettingsURL, options: [:]) { success in
                 if !success {
                     if let appSettingsURL = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(appSettingsURL)
