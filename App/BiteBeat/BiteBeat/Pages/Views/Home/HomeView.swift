@@ -1,8 +1,10 @@
 import SwiftUI
 import BiteBeatMusic
+import FoundationModels
 
 struct HomeView: View {
     @Environment(MusicSessionManager.self) private var musicSession
+    @AppStorage("hasAcknowledgedAppleIntelligence") private var hasAcknowledgedAppleIntelligence = true
     @State private var viewModel = HomeViewModel()
     @State private var expandedOpacity: Double = 1.0
     @State private var isInteracting = false
@@ -347,6 +349,15 @@ struct HomeView: View {
             if !viewModel.canAnalyzeToday {
                 viewModel.navigateToSavedMeal = true
                 return
+            }
+
+            if #available(iOS 26.0, *) {
+                if AppleIntelligenceHelper.isNotEnabled {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.82)) {
+                        hasAcknowledgedAppleIntelligence = false
+                    }
+                    return
+                }
             }
 
             if musicSession.isAuthorized {

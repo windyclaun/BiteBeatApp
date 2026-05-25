@@ -12,6 +12,8 @@ struct SecretMenuView: View {
     @AppStorage("overrideAnalyzerMode") private var analyzerMode: String = "auto"
     @AppStorage("analyzerLanguage") private var analyzerLanguage: String = "english"
     
+    @State private var showResetAlert = false
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -28,6 +30,16 @@ struct SecretMenuView: View {
                     }
                 }
                 
+                Section(header: Text("Debug Actions")) {
+                    Button(role: .destructive) {
+                        DailyMealSelectionStore.resetTodaySelection()
+                        NotificationCenter.default.post(name: NSNotification.Name("ResetHome"), object: nil)
+                        showResetAlert = true
+                    } label: {
+                        Label("Reset Today's Mood Analysis", systemImage: "arrow.counterclockwise")
+                    }
+                }
+                
                 Section(footer: Text("Changes apply to the next analysis session. Force Database will still fail safely to Creative if the foods.json asset is truly missing.")) {
                     EmptyView()
                 }
@@ -41,6 +53,11 @@ struct SecretMenuView: View {
                     }
                     .fontWeight(.bold)
                 }
+            }
+            .alert("Success", isPresented: $showResetAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Today's mood analysis status has been reset. You can now perform a new analysis on the Home screen.")
             }
         }
     }

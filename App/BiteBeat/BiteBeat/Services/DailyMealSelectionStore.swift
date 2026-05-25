@@ -56,4 +56,16 @@ public enum DailyMealSelectionStore {
 
         return history
     }
+
+    public static func resetTodaySelection() {
+        UserDefaults.standard.removeObject(forKey: selectedMealKey)
+        
+        // Also remove today's entry from the meal history to keep it fully in sync
+        var history = loadHistory()
+        history.removeAll { calendar.isDateInToday($0.selectedAt) }
+        if let data = try? JSONEncoder().encode(history) {
+            UserDefaults.standard.set(data, forKey: mealHistoryKey)
+        }
+    }
 }
+
