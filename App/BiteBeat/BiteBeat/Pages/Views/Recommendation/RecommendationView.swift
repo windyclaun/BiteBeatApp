@@ -4,7 +4,7 @@ import SwiftUI
 struct RecommendationView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: RecommendationViewModel
-    
+
     init(vibeName: String, mainMeal: Meal, alternatives: [Meal]) {
         _viewModel = State(initialValue: RecommendationViewModel(
             vibeName: vibeName,
@@ -12,27 +12,17 @@ struct RecommendationView: View {
             alternatives: alternatives
         ))
     }
-    
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                // Header Brand Title
-                brandHeaderView
-                    .padding(.top, 12)
-                
+            VStack(spacing: 0) {
                 if !viewModel.choseNay {
-                    // Single option recommendation layout
-                    mainCard(for: viewModel.mainMeal)
+                    mainRecommendationView
                         .transition(.asymmetric(
                             insertion: .opacity.combined(with: .move(edge: .leading)),
                             removal: .opacity.combined(with: .move(edge: .leading))
                         ))
-                    
-                    // Call to Action buttons
-                    mainActionButtons
-                        .padding(.horizontal, 24)
                 } else {
-                    // Multiple choices / Alternatives layout
                     alternativesSelectionView
                         .transition(.asymmetric(
                             insertion: .opacity.combined(with: .move(edge: .trailing)),
@@ -40,74 +30,110 @@ struct RecommendationView: View {
                         ))
                 }
             }
+            .padding(.horizontal, 36)
+            .padding(.top, 118)
+            .padding(.bottom, 36)
         }
-        .background(Color(uiColor: .systemGroupedBackground))
+        .background(Color(uiColor: .systemBackground))
         .navigationBarBackButtonHidden()
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                closeButton
-            }
-        }
+        .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(isPresented: $viewModel.navigateToEnding) {
             if let meal = viewModel.finalMeal {
                 EndingView(selectedMeal: meal)
             }
         }
     }
-    
-    // MARK: - Extracted UI Views
-    
-    private var brandHeaderView: some View {
-        VStack(spacing: 4) {
-            Text("Apple Intelligence Match")
-                .font(.footnote)
-                .foregroundStyle(.pink.gradient)
-                .textCase(.uppercase)
-                .tracking(1.5)
-                .bold()
-            
+
+    private var mainRecommendationView: some View {
+        VStack(spacing: 0) {
             Text("Your Best Lunch Match")
-                .font(.title2.bold())
-                .foregroundStyle(.primary)
+                .font(.system(size: 21, weight: .bold, design: .rounded))
+                .foregroundStyle(.black)
+                .multilineTextAlignment(.center)
+                .padding(.bottom, 34)
+
+            mealHeroImage(for: viewModel.mainMeal, size: 264)
+
+            mealSummary(for: viewModel.mainMeal)
+                .padding(.top, 42)
+
+            mainActionButtons
+                .padding(.top, 44)
         }
     }
-    
+
+    private func mealSummary(for meal: Meal) -> some View {
+        VStack(spacing: 18) {
+            Text(meal.title)
+                .font(.system(size: 29, weight: .bold, design: .rounded))
+                .foregroundStyle(.black)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.78)
+
+            HStack(spacing: 18) {
+                infoItem(systemImage: "creditcard", text: meal.price)
+                infoItem(systemImage: "map", text: meal.restaurantName)
+                infoItem(systemImage: "list.clipboard", text: meal.calories)
+            }
+            .frame(maxWidth: .infinity)
+
+            Text(meal.description)
+                .font(.system(size: 16, weight: .regular, design: .rounded))
+                .foregroundStyle(Color(uiColor: .systemGray))
+                .lineSpacing(3)
+                .multilineTextAlignment(.center)
+                .lineLimit(4)
+                .minimumScaleFactor(0.88)
+        }
+    }
+
     private var mainActionButtons: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Button {
                 viewModel.selectMainMeal()
             } label: {
-                Label("Yay! Let's Eat!", systemImage: "fork.knife")
-                    .font(.headline)
-                    .bold()
+                Text("Yay !")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                    .frame(height: 50)
+                    .background(Color.pink, in: Capsule())
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.pink)
-            .controlSize(.large)
-            .clipShape(Capsule())
-            
+            .buttonStyle(.plain)
+            .shadow(color: .pink.opacity(0.22), radius: 16, y: 8)
+
             Button {
                 viewModel.toggleShowAlternatives(show: true)
             } label: {
-                Text("Nay, show me alternatives")
-                    .font(.subheadline.bold())
+                Text("Nay !")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(.pink)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
+                    .frame(height: 50)
+                    .background(.white, in: Capsule())
+                    .overlay {
+                        Capsule()
+                            .stroke(.pink, lineWidth: 1.5)
+                    }
             }
             .buttonStyle(.plain)
         }
     }
-    
+
     private var alternativesSelectionView: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Explore 2 Alternatives:")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
-            
+        VStack(spacing: 24) {
+            VStack(spacing: 8) {
+                Text("Pick Another Match")
+                    .font(.system(size: 21, weight: .bold, design: .rounded))
+                    .foregroundStyle(.black)
+
+                Text("Choose one meal that fits your mood better.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                 ForEach(viewModel.alternatives) { meal in
                     Button {
@@ -118,179 +144,107 @@ struct RecommendationView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal)
-            
+
             if let selectedAlternative = viewModel.selectedAlternative {
                 alternativeDescriptionBox(for: selectedAlternative)
             }
-            
-            Spacer()
-            
+
             alternativeActionButtons
-                .padding(.horizontal, 24)
+                .padding(.top, 8)
         }
     }
-    
-    private func alternativeDescriptionBox(for meal: Meal) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Vibe & Details")
-                .font(.subheadline.bold())
-                .foregroundStyle(.pink)
-            
-            Text(meal.description)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .lineSpacing(3)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background, in: RoundedRectangle(cornerRadius: 14))
-        .shadow(color: .black.opacity(0.03), radius: 4, y: 2)
-        .padding(.horizontal)
-        .transition(.opacity.combined(with: .scale(scale: 0.95)))
-    }
-    
+
     private var alternativeActionButtons: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Button {
                 viewModel.selectAlternativeMeal()
             } label: {
-                Text("Let's Eat!")
-                    .font(.headline)
-                    .bold()
+                Text("Yay !")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                    .frame(height: 50)
+                    .background(viewModel.selectedAlternative == nil ? Color.gray.opacity(0.35) : Color.pink, in: Capsule())
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.pink)
+            .buttonStyle(.plain)
             .disabled(viewModel.selectedAlternative == nil)
-            .clipShape(Capsule())
-            
+
             Button {
                 viewModel.resetToMainSelection()
             } label: {
-                Text("Show Best Match Again")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Text("Back to Best Match")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(.pink)
                     .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(.white, in: Capsule())
+                    .overlay {
+                        Capsule()
+                            .stroke(.pink, lineWidth: 1.5)
+                    }
             }
-            .padding(.top, 4)
+            .buttonStyle(.plain)
         }
     }
-    
-    private var closeButton: some View {
-        Button {
-            dismiss()
-            NotificationCenter.default.post(name: NSNotification.Name("ResetHome"), object: nil)
-        } label: {
-            Image(systemName: "xmark")
-                .font(.body.bold())
+
+    private func alternativeDescriptionBox(for meal: Meal) -> some View {
+        VStack(spacing: 16) {
+            mealSummary(for: meal)
+        }
+        .padding(.top, 4)
+        .transition(.opacity.combined(with: .scale(scale: 0.96)))
+    }
+
+    private func alternativeCard(for meal: Meal, isSelected: Bool) -> some View {
+        VStack(spacing: 10) {
+            mealHeroImage(for: meal, size: 88)
+
+            Text(meal.title)
+                .font(.caption.bold())
+                .foregroundStyle(isSelected ? .pink : .black)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .frame(height: 34)
+
+            Text(meal.price)
+                .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
         }
-    }
-    
-    // MARK: - Extracted Card Components
-    
-    @ViewBuilder
-    private func mainCard(for meal: Meal) -> some View {
-        VStack(spacing: 0) {
-            FoodImageView(
-                mealTitle: meal.title,
-                wikipediaQuery: meal.wikipediaSearchQuery,
-                fallbackUrl: meal.imageUrl
-            )
-            .frame(width: 240, height: 240)
-            .clipShape(Circle())
-            .shadow(color: .black.opacity(0.15), radius: 10, y: 6)
-            .padding(.top, 20)
-            
-            VStack(spacing: 16) {
-                VStack(spacing: 6) {
-                    Text(meal.title)
-                        .font(.title2.bold())
-                        .multilineTextAlignment(.center)
-                    
-                    Text(meal.location)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.top, 16)
-                
-                HStack(spacing: 12) {
-                    chip(label: meal.price, systemImage: "tag.fill")
-                    chip(label: meal.calories, systemImage: "flame.fill")
-                }
-                
-                Divider()
-                    .padding(.horizontal)
-                
-                Text(meal.description)
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .lineSpacing(4)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-                    .padding(.bottom, 24)
-            }
-        }
+        .padding(12)
         .frame(maxWidth: .infinity)
-        .background(.background)
-        .clipShape(RoundedRectangle(cornerRadius: 24))
-        .shadow(color: .black.opacity(0.04), radius: 12, y: 6)
-        .padding(.horizontal, 24)
-    }
-    
-    @ViewBuilder
-    private func alternativeCard(for meal: Meal, isSelected: Bool) -> some View {
-        VStack(spacing: 12) {
-            FoodImageView(
-                mealTitle: meal.title,
-                wikipediaQuery: meal.wikipediaSearchQuery,
-                fallbackUrl: meal.imageUrl
-            )
-            .frame(width: 70, height: 70)
-            .clipShape(Circle())
-            .overlay(Circle().stroke(isSelected ? Color.pink : Color.clear, lineWidth: 2))
-            .shadow(color: isSelected ? .pink.opacity(0.2) : .black.opacity(0.05), radius: 6, y: 3)
-            
-            VStack(spacing: 4) {
-                Text(meal.title)
-                    .font(.caption.bold())
-                    .foregroundStyle(isSelected ? .pink : .primary)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .frame(height: 32)
-                
-                Text(meal.price)
-                    .font(.caption2)
-                    .bold()
-                    .foregroundStyle(.pink)
-            }
+        .background(.white, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(isSelected ? Color.pink : Color(uiColor: .systemGray5), lineWidth: isSelected ? 2 : 1)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(isSelected ? Color.pink.opacity(0.05) : Color(uiColor: .secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(isSelected ? Color.pink : Color.clear, lineWidth: 2)
+        .shadow(color: .black.opacity(0.06), radius: 12, y: 6)
+    }
+
+    private func mealHeroImage(for meal: Meal, size: CGFloat) -> some View {
+        FoodImageView(
+            mealTitle: meal.title,
+            wikipediaQuery: meal.wikipediaSearchQuery,
+            fallbackUrl: meal.imageUrl
         )
-        .shadow(color: isSelected ? .pink.opacity(0.08) : .black.opacity(0.04), radius: 6, y: 3)
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+        .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
     }
-    
-    @ViewBuilder
-    private func chip(label: String, systemImage: String) -> some View {
+
+    private func infoItem(systemImage: String, text: String) -> some View {
         HStack(spacing: 6) {
             Image(systemName: systemImage)
-                .font(.footnote)
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(.pink)
-            Text(label)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .frame(width: 20, height: 20)
+
+            Text(text)
+                .font(.system(size: 12, weight: .regular, design: .rounded))
+                .foregroundStyle(Color(uiColor: .systemGray))
+                .lineLimit(1)
+                .minimumScaleFactor(0.68)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(.quaternary.opacity(0.4), in: Capsule())
+        .frame(minWidth: 0)
     }
 }
 
@@ -298,16 +252,35 @@ struct RecommendationView: View {
     RecommendationView(
         vibeName: "Vibrant & Spicy",
         mainMeal: Meal(
-            title: "Nasi Uduk Ayam Goreng",
-            price: "Rp 25.000",
-            location: "Nasi Uduk Ibu Sum (0.4 km)",
-            calories: "680 kcal",
-            description: "Nasi uduk gurih wangi pandan disajikan hangat pakai ayam goreng kuning renyah, tempe garing, lalapan segar, plus sambal terasi ulek yang pedasnya mantap!",
-            crazyFunDescription: "Warning — this meal may trigger spontaneous shoulder dancing.",
+            title: "Ayam Panggang",
+            price: "17.000 IDR",
+            location: "Kantin UoB",
+            calories: "573 cal",
+            description: "The mix of relaxing melodies and upbeat pop feels similar to enjoying a flavorful, satisfying meal that feels both cozy and energizing.",
+            crazyFunDescription: "Warning - this meal may trigger spontaneous shoulder dancing.",
             systemImage: "flame.fill",
             gradientColors: ["orange", "red"]
         ),
-        alternatives: []
+        alternatives: [
+            Meal(
+                title: "Nasi Goreng",
+                price: "18.000 IDR",
+                location: "Kantin UoB",
+                calories: "620 cal",
+                description: "A warm, familiar plate with enough rhythm and comfort to match your playlist.",
+                systemImage: "flame.fill",
+                gradientColors: ["orange", "red"]
+            ),
+            Meal(
+                title: "Mie Ayam",
+                price: "15.000 IDR",
+                location: "Kantin UoB",
+                calories: "540 cal",
+                description: "Springy noodles and savory broth for a light but satisfying lunch mood.",
+                systemImage: "leaf.fill",
+                gradientColors: ["green", "teal"]
+            )
+        ]
     )
 }
 
