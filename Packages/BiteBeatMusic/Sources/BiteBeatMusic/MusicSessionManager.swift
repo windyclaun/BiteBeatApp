@@ -125,6 +125,39 @@ public final class MusicSessionManager {
         }
     }
 
+    public func playRandomTrack(from tracks: [BiteMusicTrack]) async {
+        guard authorizationStatus == .authorized else { return }
+
+        if musicSubscription == nil {
+            await refreshSubscription()
+        }
+
+        guard canPlayCatalogContent else { return }
+
+        for track in tracks.shuffled() {
+            do {
+                guard let song = try await fetchPlayableSong(id: track.id) else { continue }
+                let player = ApplicationMusicPlayer.shared
+                player.queue = ApplicationMusicPlayer.Queue(for: [song], startingAt: song)
+                try await player.play()
+                return
+            } catch {
+                continue
+            }
+        }
+    }
+
+    public func pausePlayback() {
+        ApplicationMusicPlayer.shared.pause()
+    }
+
+    private func fetchPlayableSong(id: String) async throws -> Song? {
+        let musicItemID = MusicItemID(id)
+        var request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: musicItemID)
+        let response = try await request.response()
+        return response.items.first
+    }
+
     public func fetchDefaultPlaylist() async -> [BiteMusicTrack] {
         guard let url = Bundle.main.url(forResource: "default_playlist", withExtension: "json"),
               let data = try? Data(contentsOf: url),
