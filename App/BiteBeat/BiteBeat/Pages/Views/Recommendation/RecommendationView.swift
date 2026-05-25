@@ -81,7 +81,7 @@ struct RecommendationView: View {
                     .font(.headline)
                     .bold()
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+//                    .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
             .tint(.pink)
@@ -159,10 +159,11 @@ struct RecommendationView: View {
                     .font(.headline)
                     .bold()
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+//                    .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
             .tint(.pink)
+            .controlSize(.large)
             .disabled(viewModel.selectedAlternative == nil)
             .clipShape(Capsule())
             
