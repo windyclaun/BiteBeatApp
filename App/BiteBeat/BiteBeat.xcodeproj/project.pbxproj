@@ -407,7 +407,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Q87Z4F68B4;
+				DEVELOPMENT_TEAM = WP99VBV7FN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "BiteBeat needs access to your Apple Music account to browse your library, search catalog tracks, and play songs.";
@@ -444,7 +444,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = Q87Z4F68B4;
+				DEVELOPMENT_TEAM = WP99VBV7FN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "BiteBeat needs access to your Apple Music account to browse your library, search catalog tracks, and play songs.";
