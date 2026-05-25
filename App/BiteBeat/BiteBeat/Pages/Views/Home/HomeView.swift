@@ -189,6 +189,7 @@ struct HomeView: View {
                             viewModel.calculatedVibeName = vibeName
                             viewModel.calculatedMain = mainMeal
                             viewModel.calculatedAlternatives = alternatives
+                            viewModel.navigateToLoading = false
                             viewModel.navigateToRecommendation = true
                         },
                         onCancel: {
@@ -239,12 +240,19 @@ struct HomeView: View {
                     )
                 }
             }
+            .navigationDestination(isPresented: $viewModel.navigateToSavedMeal) {
+                if let selectedMeal = viewModel.selectedMealToday {
+                    EndingView(selectedMeal: selectedMeal)
+                }
+            }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetHome"))) { _ in
+                viewModel.refreshSelectedMealToday()
                 withAnimation(.easeInOut) {
                     viewModel.navigateToLoading = false
                 }
                 viewModel.isExpanded = false
                 viewModel.navigateToRecommendation = false
+                viewModel.navigateToSavedMeal = false
                 viewModel.calculatedVibeName = nil
                 viewModel.calculatedMain = nil
                 viewModel.calculatedAlternatives = []
@@ -267,6 +275,7 @@ struct HomeView: View {
                 }
             }
             .onAppear {
+                viewModel.refreshSelectedMealToday()
                 triggerCardStackAnimation()
             }
         }
@@ -333,6 +342,13 @@ struct HomeView: View {
     
     private var analyzeMoodButton: some View {
         Button {
+            viewModel.refreshSelectedMealToday()
+
+            if !viewModel.canAnalyzeToday {
+                viewModel.navigateToSavedMeal = true
+                return
+            }
+
             if musicSession.isAuthorized {
                 withAnimation(.easeInOut) {
                     viewModel.navigateToLoading = true
@@ -342,13 +358,33 @@ struct HomeView: View {
             }
         } label: {
             HStack {
+                if let selectedMeal = viewModel.selectedMealToday {
+                    FoodImageView(
+                        mealTitle: selectedMeal.title,
+                        wikipediaQuery: selectedMeal.wikipediaSearchQuery,
+                        fallbackUrl: selectedMeal.imageUrl
+                    )
+                    .frame(width: 48, height: 48)
+                    .clipShape(Circle())
+                }
+
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Analyze My Mood")
-                        .font(.headline)
-                        .bold()
-                    Text("Get food recommendation now !")
-                        .font(.caption)
-                        .opacity(0.9)
+                    if let selectedMeal = viewModel.selectedMealToday {
+                        Text(selectedMeal.title)
+                            .font(.headline)
+                            .bold()
+                            .lineLimit(1)
+                        Text("Tap to view food details")
+                            .font(.caption)
+                            .opacity(0.9)
+                    } else {
+                        Text("Analyze My Mood")
+                            .font(.headline)
+                            .bold()
+                        Text("Get food recommendation now !")
+                            .font(.caption)
+                            .opacity(0.9)
+                    }
                 }
                 .foregroundStyle(.white)
                 
@@ -359,12 +395,12 @@ struct HomeView: View {
                     .foregroundStyle(.white)
             }
             .padding(.horizontal, 24)
-            .padding(.vertical, 20)
+            .padding(.vertical, viewModel.canAnalyzeToday ? 20 : 16)
             .background(
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Color.pink)
+                    .fill(viewModel.canAnalyzeToday ? Color.pink : Color.green)
             )
-            .shadow(color: .pink.opacity(0.3), radius: 10, y: 6)
+            .shadow(color: (viewModel.canAnalyzeToday ? Color.pink : Color.green).opacity(0.3), radius: 10, y: 6)
         }
     }
     

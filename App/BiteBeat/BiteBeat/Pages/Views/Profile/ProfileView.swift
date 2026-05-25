@@ -322,3 +322,4 @@ private struct ProfileDetailsSheet: View {
             .environment(MusicSessionManager())
     }
 }
+

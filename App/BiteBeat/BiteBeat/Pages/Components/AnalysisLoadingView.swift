@@ -47,6 +47,9 @@ struct AnalysisLoadingView: View {
                 onAnalysisComplete(vibeName, mainMeal, alternatives)
             }
         }
+        .onDisappear {
+            viewModel.cancelWorkflow()
+        }
     }
     
     // MARK: - Extracted Visual Components
@@ -288,6 +291,8 @@ public final class AnalysisLoadingViewModel {
     }
     
     public func startAnalysisAndAnimations(onComplete: @escaping @MainActor (String, Meal, [Meal]) -> Void) {
+        guard workflowTask == nil else { return }
+
         self.onCompleteCallback = onComplete
         
         // Start continuous background visual effects
@@ -306,6 +311,8 @@ public final class AnalysisLoadingViewModel {
     
     public func cancelWorkflow() {
         workflowTask?.cancel()
+        workflowTask = nil
+        onCompleteCallback = nil
     }
     
     private func performAnalysisWorkflow() async {
