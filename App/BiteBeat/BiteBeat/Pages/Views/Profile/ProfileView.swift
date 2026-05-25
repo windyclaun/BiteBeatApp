@@ -2,135 +2,317 @@ import BiteBeatMusic
 import SwiftUI
 
 struct ProfileView: View {
+    @Environment(\.dismiss) private var dismiss
     @Environment(MusicSessionManager.self) private var musicSession
     @State private var viewModel = ProfileViewModel()
+    @State private var showProfileDetails = false
 
     var body: some View {
-        List {
-            Section {
-                profileHeaderView
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 24) {
+                profileHeroView
+                historySection
+                tasteAnalysisCard
+                accountActionsSection
             }
-            .listRowBackground(Color.clear)
-            
-            Section("Apple Intelligence Vibe") {
-                tasteAnalysisView
-            }
-            
-            Section("Apple Music Account") {
-                accountDetailsView
-            }
-            
-            Section(footer: ImageAccessWarningFooter) {
-                disconnectButtonView
-            }
-            
-            Section {
-                NavigationLink("About BiteBeat") {
-                    AboutView()
-                }
-            }
+            .padding(.horizontal, 20)
+            .padding(.top, 18)
+            .padding(.bottom, 32)
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Profile")
-        .navigationBarTitleDisplayMode(.inline)
+        .background(Color(uiColor: .systemGroupedBackground))
+        .navigationBarBackButtonHidden()
+        .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $showProfileDetails) {
+            ProfileDetailsSheet(
+                storefrontCountry: viewModel.storefrontCountry,
+                canPlayCatalogContent: musicSession.canPlayCatalogContent,
+                onOpenSettings: viewModel.openSystemSettings
+            )
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+        }
         .task {
             await viewModel.fetchRecentSongsAndAnalyze(using: musicSession)
         }
-    }
-    
-    // MARK: - Extracted UI Components
-    
-    private var profileHeaderView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "person.crop.circle.fill")
-                .font(.system(size: 80))
-                .foregroundStyle(.pink.gradient)
-                .symbolRenderingMode(.hierarchical)
-                .padding(.top, 8)
-            
-            VStack(spacing: 6) {
-                HStack(spacing: 6) {
-                    Image(systemName: "apple.logo")
-                    Text("Apple Music User")
-                }
-                .font(.title2.bold())
-                
-                Text(" Secured Account Link")
-                    .font(.caption.bold())
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(.quaternary, in: Capsule())
-            }
+        .onAppear {
+            viewModel.refreshMealHistory()
         }
-        .frame(maxWidth: .infinity)
     }
-    
-    private var tasteAnalysisView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                Image(systemName: "sparkles")
-                    .font(.title2)
-                    .foregroundStyle(.pink)
-                
-                Text("Dominant Music Persona")
-                    .font(.headline.weight(.semibold))
+
+    private var profileHeroView: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .frame(width: 48, height: 48)
+                        .background(.white.opacity(0.9), in: Circle())
+                        .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                NavigationLink {
+                    AboutView()
+                } label: {
+                    Image(systemName: "info.circle.fill")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.pink)
+                        .frame(width: 48, height: 48)
+                        .background(.white.opacity(0.9), in: Circle())
+                        .shadow(color: .black.opacity(0.06), radius: 8, y: 4)
+                }
+                .buttonStyle(.plain)
             }
-            
-            if viewModel.isLoadingVibe {
-                HStack {
-                    ProgressView()
-                    Text("Analyzing your taste…")
+            .padding(.bottom, 34)
+
+            Button {
+                showProfileDetails = true
+            } label: {
+                VStack(spacing: 10) {
+                    Image(systemName: "person.crop.circle.fill")
+                        .font(.system(size: 96))
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(.pink)
+
+                    HStack(spacing: 8) {
+                        Text("Apple Music User")
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+
+                        Image(systemName: "chevron.right")
+                            .font(.headline.weight(.semibold))
+                            .foregroundStyle(.primary)
+                    }
+
+                    Text("Connected with Apple Music")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                        .padding(.leading, 6)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(18)
+        .padding(.bottom, 24)
+        .background(.background, in: RoundedRectangle(cornerRadius: 34, style: .continuous))
+        .shadow(color: .black.opacity(0.05), radius: 18, y: 10)
+    }
+
+    private var historySection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("History")
+                    .font(.system(size: 30, weight: .bold, design: .rounded))
+
+                Spacer()
+
+                Text("Recent picks")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            if viewModel.mealHistory.isEmpty {
+                emptyHistoryCard
+            } else {
+                VStack(spacing: 14) {
+                    ForEach(viewModel.mealHistory, id: \.selectedAt) { selection in
+                        historyRow(selection)
+                    }
+                }
+            }
+        }
+    }
+
+    private var emptyHistoryCard: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "fork.knife.circle.fill")
+                .font(.system(size: 42))
+                .foregroundStyle(.pink)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("No food history yet")
+                    .font(.headline.bold())
+                Text("Your daily picks will appear here.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(18)
+        .background(.background, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .shadow(color: .black.opacity(0.07), radius: 14, y: 8)
+    }
+
+    private func historyRow(_ selection: DailyMealSelection) -> some View {
+        HStack(spacing: 16) {
+            FoodImageView(
+                mealTitle: selection.meal.title,
+                wikipediaQuery: selection.meal.wikipediaSearchQuery,
+                fallbackUrl: selection.meal.imageUrl
+            )
+            .frame(width: 64, height: 64)
+            .clipShape(Circle())
+            .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text(selection.meal.title)
+                    .font(.title3.bold())
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+
+                Text(selection.selectedAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).year()))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+        }
+        .padding(18)
+        .background(.background, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .shadow(color: .black.opacity(0.07), radius: 14, y: 8)
+    }
+
+    private var tasteAnalysisCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 10) {
+                Image(systemName: "apple.intelligence")
+                    .font(.title2)
+                    .foregroundStyle(.pink)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Apple Intelligence Vibe")
+                        .font(.headline.bold())
+                    Text("Dominant Music Persona")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+            }
+
+            if viewModel.isLoadingVibe {
+                HStack(spacing: 10) {
+                    ProgressView()
+                        .tint(.pink)
+                    Text("Analyzing your taste...")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.vertical, 8)
             } else {
                 Text(viewModel.dominantVibeName)
                     .font(.title3.bold())
                     .foregroundStyle(.pink.gradient)
-                
+
                 Text(viewModel.dominantVibeDescription)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                    .lineLimit(nil)
+                    .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(.vertical, 6)
+        .padding(20)
+        .background(.background, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .shadow(color: .black.opacity(0.07), radius: 14, y: 8)
     }
-    
-    private var accountDetailsView: some View {
-        Group {
-            LabeledContent("Status") {
-                Text("Connected")
-                    .foregroundStyle(.green)
-                    .bold()
+
+    private var accountActionsSection: some View {
+        VStack(spacing: 12) {
+            Button(role: .destructive) {
+                viewModel.openSystemSettings()
+            } label: {
+                Label("Disconnect Apple Music", systemImage: "rectangle.portrait.and.arrow.right")
+                    .font(.subheadline.bold())
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
             }
-            
-            LabeledContent("Storefront") {
-                Text(viewModel.storefrontCountry)
-                    .foregroundStyle(.secondary)
+            .buttonStyle(.bordered)
+            .tint(.red)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+            Text("Apple Music authorization is managed securely by iOS. To fully revoke access, disable Media & Apple Music in system settings for BiteBeat.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+    }
+}
+
+private struct ProfileDetailsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let storefrontCountry: String
+    let canPlayCatalogContent: Bool
+    let onOpenSettings: () -> Void
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 34) {
+                Image(systemName: "person.crop.circle.fill")
+                    .font(.system(size: 104))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(.pink)
+                    .padding(.top, 20)
+
+                VStack(spacing: 0) {
+                    detailRow(title: "Name", value: "Apple Music User")
+                    detailRow(title: "Account", value: "Secured Link")
+                    detailRow(title: "Storefront", value: storefrontCountry)
+                    detailRow(title: "Play Catalog", value: canPlayCatalogContent ? "Available" : "Unavailable")
+                    detailRow(title: "AI Vibe", value: "Enabled")
+                }
+                .padding(.horizontal, 24)
+
+                Spacer()
             }
-            
-            LabeledContent("Play Catalog") {
-                Image(systemName: musicSession.canPlayCatalogContent ? "checkmark.circle.fill" : "xmark.circle")
-                    .foregroundStyle(musicSession.canPlayCatalogContent ? .green : .secondary)
+            .background(Color(uiColor: .systemGroupedBackground))
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.headline.weight(.semibold))
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Edit") {
+                        onOpenSettings()
+                    }
+                    .fontWeight(.semibold)
+                }
             }
         }
     }
-    
-    private var disconnectButtonView: some View {
-        Button(role: .destructive) {
-            viewModel.openSystemSettings()
-        } label: {
-            Label("Disconnect Apple Music", systemImage: "rectangle.portrait.and.arrow.right")
+
+    private func detailRow(title: String, value: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.body)
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            Text(value)
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+
+            Image(systemName: "chevron.right")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.tertiary)
         }
-    }
-    
-    private var ImageAccessWarningFooter: some View {
-        Text("Apple Music authorization is managed securely by iOS. To fully revoke access, disable 'Media & Apple Music' in the system settings for BiteBeat.")
+        .padding(.vertical, 15)
+        .overlay(alignment: .bottom) {
+            Divider()
+        }
     }
 }
 
@@ -140,4 +322,3 @@ struct ProfileView: View {
             .environment(MusicSessionManager())
     }
 }
-
