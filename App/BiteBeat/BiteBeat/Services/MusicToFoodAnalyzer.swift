@@ -14,6 +14,9 @@ public struct Meal: Identifiable, Hashable, Sendable {
     public let systemImage: String
     public let gradientColors: [String] // Color name strings for generating SwiftUI gradients
     public let imageUrl: String
+    public let crazyFunDescription: String
+
+    nonisolated public static let defaultCrazyFunDescription = "Warning - this meal may trigger spontaneous shoulder dancing."
     
     nonisolated public init(
         title: String,
@@ -21,6 +24,7 @@ public struct Meal: Identifiable, Hashable, Sendable {
         location: String,
         calories: String,
         description: String,
+        crazyFunDescription: String = Meal.defaultCrazyFunDescription,
         systemImage: String,
         gradientColors: [String],
         imageUrl: String = ""
@@ -34,6 +38,7 @@ public struct Meal: Identifiable, Hashable, Sendable {
         self.systemImage = systemImage
         self.gradientColors = gradientColors
         self.imageUrl = imageUrl
+        self.crazyFunDescription = crazyFunDescription
     }
     
     public var wikipediaSearchQuery: String {
@@ -80,6 +85,7 @@ fileprivate struct AIMeal: Codable {
     let location: String
     let calories: String
     let description: String
+    let crazyFunDescription: String?
     let systemImage: String
     let gradientColors: [String]
 }
@@ -182,6 +188,7 @@ public final class MusicToFoodAnalyzer: Sendable {
             "location": "Dummy restaurant name",
             "calories": "600 kcal",
             "description": "Appetizing description of the food",
+            "crazyFunDescription": "Crazy fun fact about the food",
             "systemImage": "flame.fill",
             "gradientColors": ["orange", "red"]
           },
@@ -192,6 +199,7 @@ public final class MusicToFoodAnalyzer: Sendable {
               "location": "Dummy restaurant 2",
               "calories": "500 kcal",
               "description": "Appetizing description",
+              "crazyFunDescription": "Crazy fun fact about the food",
               "systemImage": "leaf.fill",
               "gradientColors": ["green", "teal"]
             },
@@ -201,6 +209,7 @@ public final class MusicToFoodAnalyzer: Sendable {
               "location": "Dummy restaurant 3",
               "calories": "400 kcal",
               "description": "Appetizing description",
+              "crazyFunDescription": "Crazy fun fact about the food",
               "systemImage": "star.fill",
               "gradientColors": ["purple", "pink"]
             }
@@ -228,6 +237,7 @@ public final class MusicToFoodAnalyzer: Sendable {
             location: result.mainMeal.location,
             calories: result.mainMeal.calories,
             description: result.mainMeal.description,
+            crazyFunDescription: result.mainMeal.crazyFunDescription ?? Meal.defaultCrazyFunDescription,
             systemImage: result.mainMeal.systemImage,
             gradientColors: result.mainMeal.gradientColors
         )
@@ -239,6 +249,7 @@ public final class MusicToFoodAnalyzer: Sendable {
                 location: $0.location,
                 calories: $0.calories,
                 description: $0.description,
+                crazyFunDescription: $0.crazyFunDescription ?? Meal.defaultCrazyFunDescription,
                 systemImage: $0.systemImage,
                 gradientColors: $0.gradientColors
             )
