@@ -10,6 +10,7 @@ import Observation
 import BiteBeatMusic
 
 struct AnalysisLoadingView: View {
+    @Environment(MusicSessionManager.self) private var musicSession
     @State private var viewModel: AnalysisLoadingViewModel
     let onAnalysisComplete: @MainActor (String, Meal, [Meal]) -> Void
     let onCancel: @MainActor () -> Void
@@ -43,11 +44,13 @@ struct AnalysisLoadingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(uiColor: .systemGroupedBackground))
         .task {
+            await musicSession.playRandomTrack(from: viewModel.displaySongs)
             viewModel.startAnalysisAndAnimations { vibeName, mainMeal, alternatives in
                 onAnalysisComplete(vibeName, mainMeal, alternatives)
             }
         }
         .onDisappear {
+            musicSession.pausePlayback()
             viewModel.cancelWorkflow()
         }
     }
@@ -56,53 +59,15 @@ struct AnalysisLoadingView: View {
     
     private var interactiveVisualizerGroup: some View {
         ZStack {
-            // Background pulsing aura/glow
-            Circle()
-                .fill(LinearGradient(
-                    colors: [.pink, .purple, .orange],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ))
-                .frame(width: 140, height: 140)
-                .scaleEffect(viewModel.pulseScale * viewModel.orbScale)
-                .blur(radius: 20)
-                .opacity(0.6)
-            
-            // Floating and merging songs from 360 degrees
+            TargetPlayLoadingAnimation(
+                pulseScale: viewModel.pulseScale,
+                impactScale: viewModel.orbScale
+            )
+
             FloatingSongsView(
                 songs: viewModel.displaySongs,
                 progress: viewModel.scrollProgress
             )
-            
-            // Rotating outer ring
-            Circle()
-                .stroke(
-                    LinearGradient(
-                        colors: [.pink, .purple, .orange, .pink],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 6
-                )
-                .frame(width: 120, height: 120)
-                .scaleEffect(viewModel.orbScale)
-                .rotationEffect(.degrees(viewModel.rotateDegree))
-            
-            // Inner core orb
-            Circle()
-                .fill(LinearGradient(
-                    colors: [.pink, .orange],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ))
-                .frame(width: 80, height: 80)
-                .scaleEffect(viewModel.pulseScale * viewModel.orbScale)
-                .overlay {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 32))
-                        .foregroundStyle(.white)
-                        .symbolEffect(.bounce, options: .repeating)
-                }
         }
     }
     
@@ -124,6 +89,7 @@ struct AnalysisLoadingView: View {
     
     private var cancelButton: some View {
         Button {
+            musicSession.pausePlayback()
             viewModel.cancelWorkflow()
             onCancel()
         } label: {
@@ -145,6 +111,43 @@ struct AnalysisLoadingView: View {
                 )
                 .shadow(color: .red.opacity(0.15), radius: 8, y: 4)
         }
+    }
+}
+
+struct TargetPlayLoadingAnimation: View {
+    let pulseScale: CGFloat
+    let impactScale: CGFloat
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(Color.red.opacity(0.18), lineWidth: 1)
+                .frame(width: 240, height: 240)
+                .scaleEffect(1 + ((pulseScale - 0.65) * 0.82))
+
+            targetCircle(size: 184, opacity: 0.18)
+            targetCircle(size: 132, opacity: 0.20)
+            targetCircle(size: 92, opacity: 0.22)
+
+            Circle()
+                .fill(Color.red.opacity(0.34))
+                .frame(width: 66, height: 66)
+                .scaleEffect(pulseScale * impactScale)
+
+            Image(systemName: "play.fill")
+                .font(.system(size: 28, weight: .bold))
+                .foregroundStyle(.red)
+                .offset(x: 2)
+                .scaleEffect(impactScale)
+        }
+        .frame(width: 260, height: 260)
+    }
+
+    private func targetCircle(size: CGFloat, opacity: Double) -> some View {
+        Circle()
+            .fill(Color.red.opacity(opacity))
+            .frame(width: size, height: size)
+            .scaleEffect(1 + ((pulseScale - 0.65) * 0.78))
     }
 }
 
@@ -234,21 +237,46 @@ struct SongPillView: View {
     @ViewBuilder
     private var artworkThumbnail: some View {
         if let url = track.artworkURL {
-            AsyncImage(url: url) { image in
-                image.resizable()
-            } placeholder: {
-                Color.pink.opacity(0.2)
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .failure:
+                    musicIconThumbnail
+                case .empty:
+                    loadingThumbnail
+                @unknown default:
+                    musicIconThumbnail
+                }
             }
             .frame(width: 24, height: 24)
             .clipShape(Circle())
         } else {
-            Image(systemName: "music.note")
-                .font(.caption)
-                .foregroundStyle(.pink)
-                .frame(width: 24, height: 24)
-                .background(Color.pink.opacity(0.1))
-                .clipShape(Circle())
+            musicIconThumbnail
         }
+    }
+
+    private var loadingThumbnail: some View {
+        Circle()
+            .fill(Color.pink.opacity(0.16))
+            .overlay {
+                ProgressView()
+                    .scaleEffect(0.55)
+                    .tint(.pink)
+            }
+    }
+
+    private var musicIconThumbnail: some View {
+        Circle()
+            .fill(Color.pink.opacity(0.1))
+            .overlay {
+                Image(systemName: "music.note")
+                    .font(.caption)
+                    .foregroundStyle(.pink)
+            }
+            .frame(width: 24, height: 24)
     }
 }
 
@@ -428,3 +456,35 @@ public final class AnalysisLoadingViewModel {
         )
     }
 }
+
+#Preview {
+    AnalysisLoadingView(
+        songsToAnalyze: [
+            BiteMusicTrack(
+                id: "preview-1",
+                title: "Golden Hour",
+                artistName: "Preview Artist",
+                genreNames: ["Pop"],
+                artworkURL: nil
+            ),
+            BiteMusicTrack(
+                id: "preview-2",
+                title: "Midnight Snacks",
+                artistName: "Kitchen Beats",
+                genreNames: ["R&B"],
+                artworkURL: nil
+            ),
+            BiteMusicTrack(
+                id: "preview-3",
+                title: "Spicy Loop",
+                artistName: "Synth Chef",
+                genreNames: ["Electronic"],
+                artworkURL: nil
+            )
+        ],
+        onAnalysisComplete: { _, _, _ in },
+        onCancel: { }
+    )
+    .environment(MusicSessionManager())
+}
+
