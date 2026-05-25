@@ -4,7 +4,7 @@ import SwiftUI
 import FoundationModels
 
 // Data model for a recommended meal
-public struct Meal: Identifiable, Hashable, Sendable {
+public struct Meal: Identifiable, Hashable, Codable, Sendable {
     public let id: UUID
     public let title: String
     public let price: String

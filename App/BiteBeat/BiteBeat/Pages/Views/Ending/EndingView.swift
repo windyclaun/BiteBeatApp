@@ -35,5 +35,6 @@ struct EndingView: View {
         crazyFunDescription: "Warning — this meal may trigger spontaneous shoulder dancing.",
         systemImage: "flame.fill",
         gradientColors: ["orange", "red"]
+        
     ))
 }

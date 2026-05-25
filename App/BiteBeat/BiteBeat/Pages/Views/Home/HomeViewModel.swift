@@ -56,11 +56,23 @@ public static let defaultPlaylist: [BiteMusicTrack] = [
     
     // Calculated food recommendations and navigation
     public var navigateToRecommendation = false
+    public var navigateToSavedMeal = false
     public var calculatedVibeName: String?
     public var calculatedMain: Meal?
     public var calculatedAlternatives: [Meal] = []
+    public var selectedMealToday: Meal?
     
-    public init() {}
+    public init() {
+        refreshSelectedMealToday()
+    }
+    
+    public var canAnalyzeToday: Bool {
+        selectedMealToday == nil
+    }
+    
+    public func refreshSelectedMealToday() {
+        selectedMealToday = DailyMealSelectionStore.selectedMealForToday()
+    }
     
     public func fetchRecentSongs(using musicSession: MusicSessionManager) async {
         isRefreshing = true
