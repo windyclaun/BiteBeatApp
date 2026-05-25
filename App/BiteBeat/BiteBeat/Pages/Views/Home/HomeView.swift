@@ -84,6 +84,7 @@ struct HomeView: View {
                                     }
                                 
                                 analyzeMoodButton
+                                connectionWarning
                             }
                             .padding(.horizontal, 24)
                             .padding(.top, 12)
@@ -209,11 +210,12 @@ struct HomeView: View {
                     Button("Open Settings") {
                         viewModel.openSystemSettings()
                     }
+                } else if musicSession.authorizationStatus == .restricted {
+                    Button("OK", role: .cancel) {}
                 } else {
                     Button("Connect") {
                         Task {
-                            await musicSession.requestAuthorization()
-                            await viewModel.fetchRecentSongs(using: musicSession)
+                            await connectAppleMusic()
                             withAnimation(.easeInOut) {
                                 viewModel.navigateToLoading = true
                             }
@@ -260,9 +262,7 @@ struct HomeView: View {
                 viewModel.calculatedAlternatives = []
             }
             .task {
-                if musicSession.authorizationStatus == .notDetermined {
-                    await musicSession.requestAuthorization()
-                }
+                musicSession.refreshAuthorizationStatus()
                 await viewModel.fetchRecentSongs(using: musicSession)
             }
             .task {
@@ -351,15 +351,6 @@ struct HomeView: View {
                 return
             }
 
-            if #available(iOS 26.0, *) {
-                if AppleIntelligenceHelper.isNotEnabled {
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.82)) {
-                        hasAcknowledgedAppleIntelligence = false
-                    }
-                    return
-                }
-            }
-
             if musicSession.isAuthorized {
                 withAnimation(.easeInOut) {
                     viewModel.navigateToLoading = true
@@ -409,9 +400,13 @@ struct HomeView: View {
             .padding(.vertical, viewModel.canAnalyzeToday ? 20 : 16)
             .background(
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(viewModel.canAnalyzeToday ? Color.pink : Color.green)
+                    .fill(Color.pink)
             )
-            .shadow(color: (viewModel.canAnalyzeToday ? Color.pink : Color.green).opacity(0.3), radius: 10, y: 6)
+            .shadow(
+                color: Color.pink,
+                radius: 10,
+                y: 6
+            )
         }
     }
     
@@ -436,6 +431,132 @@ struct HomeView: View {
                 }
             }
         }
+    }
+    
+    private var connectionWarning: some View {
+        VStack(spacing: 12) {
+            if !musicSession.isAuthorized {
+                        Button {
+                            Task {
+                                await connectAppleMusic()
+                            }
+                        } label: {
+                            warningBanner(
+                                icon: "music.note",
+                                subtitle: "These are sample playlists.",
+                                title: appleMusicWarningTitle
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    if isAppleIntelligenceOff {
+                        Button {
+                            openSystemSettings()
+                        } label: {
+                            warningBanner(
+                                icon: "apple.intelligence.badge.xmark",
+                                subtitle: "These are sample recommendations.",
+                                title: "Turn on Apple Intelligence for personalized results."
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+        }
+    }
+
+    private var appleMusicWarningTitle: String {
+        switch musicSession.authorizationStatus {
+        case .denied:
+            return "Enable Apple Music access in Settings."
+        case .restricted:
+            return "Apple Music access is restricted on this device."
+        default:
+            return "Connect Apple Music to get your listening history."
+        }
+    }
+
+    private func connectAppleMusic() async {
+        musicSession.refreshAuthorizationStatus()
+
+        switch musicSession.authorizationStatus {
+        case .notDetermined:
+            await musicSession.requestAuthorization()
+            await viewModel.fetchRecentSongs(using: musicSession)
+        case .denied:
+            openSystemSettings()
+        case .restricted:
+            break
+        case .authorized:
+            await viewModel.fetchRecentSongs(using: musicSession)
+        }
+    }
+
+    private func warningBanner(
+        icon: String,
+        subtitle: String,
+        title: String,
+        action: (() -> Void)? = nil
+    ) -> some View {
+        Group {
+            if let action {
+                Button(action: action) {
+                    warningBannerContent(icon: icon, subtitle: subtitle, title: title)
+                }
+                .buttonStyle(.plain)
+            } else {
+                warningBannerContent(icon: icon, subtitle: subtitle, title: title)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.pink.opacity(0.35))
+        )
+    }
+
+    private func warningBannerContent(
+        icon: String,
+        subtitle: String,
+        title: String
+    ) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(.red)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(subtitle)
+                    .font(.system(size: 11, weight: .light))
+                    .foregroundStyle(.red)
+
+                Text(title)
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.red)
+            }
+
+            Spacer()
+        }
+    }
+    
+    private var isAppleIntelligenceOff: Bool {
+        guard #available(iOS 26.0, *) else {
+            return false
+        }
+
+        let model = SystemLanguageModel.default
+        if case .unavailable(.appleIntelligenceNotEnabled) = model.availability {
+            return true
+        }
+
+        return false
+    }
+
+    private func openSystemSettings() {
+        guard let url = URL(string: UIApplication.openSettingsURLString),
+              UIApplication.shared.canOpenURL(url) else { return }
+        UIApplication.shared.open(url)
     }
 }
 
@@ -468,7 +589,11 @@ struct LargeSongCard: View {
 }
 
 #Preview {
-    HomeView()
-        .environment(MusicSessionManager())
+    if #available(iOS 26.0, *) {
+        HomeView()
+            .environment(MusicSessionManager())
+    } else {
+        // Fallback on earlier versions
+    }
 }
 
