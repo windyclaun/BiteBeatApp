@@ -15,7 +15,7 @@ struct EndingContentView: View {
             EndingHeroImage(meal: meal)
                 .padding(.top, 38)
 
-            EndingMealCopy(mealTitle: meal.title, mealCrazyFunDescription: meal.crazyFunDescription)
+            EndingMealCopy(meal: meal)
                 .padding(.top, 36)
 
             Spacer(minLength: 32)
