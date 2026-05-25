@@ -118,32 +118,34 @@ private struct AppleIntelligencePermissionView: View {
 
     private var actionButtonsView: some View {
         VStack(spacing: 4) {
-            Button {
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.82)) {
-                    hasAcknowledgedAppleIntelligence = true
-                }
-            } label: {
-                Text("Continue")
-                    .font(.subheadline)
-                    .bold()
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(.pink)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-
-            if shouldShowSettingsButton {
+            if AppleIntelligenceHelper.isNotEnabled {
                 Button {
                     openSystemSettings()
                 } label: {
                     Text("Open Settings")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
                         .bold()
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
+                        .padding(.vertical, 14)
                 }
+                .buttonStyle(.borderedProminent)
+                .tint(.pink)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+            } else {
+                Button {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.82)) {
+                        hasAcknowledgedAppleIntelligence = true
+                    }
+                } label: {
+                    Text("Continue")
+                        .font(.subheadline)
+                        .bold()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.pink)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
             }
         }
     }
@@ -189,17 +191,18 @@ private struct AppleIntelligencePermissionView: View {
         }
     }
 
-    private var shouldShowSettingsButton: Bool {
-        if case .unavailable(.appleIntelligenceNotEnabled) = model.availability {
-            return true
-        }
-        return false
-    }
-
     private func openSystemSettings() {
-        guard let url = URL(string: UIApplication.openSettingsURLString),
-              UIApplication.shared.canOpenURL(url) else { return }
-        UIApplication.shared.open(url)
+        if let siriURL = URL(string: "App-Prefs:root=SIRI") {
+            UIApplication.shared.open(siriURL, options: [:]) { success in
+                if !success {
+                    if let appSettingsURL = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(appSettingsURL)
+                    }
+                }
+            }
+        } else if let appSettingsURL = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(appSettingsURL)
+        }
     }
 }
 
