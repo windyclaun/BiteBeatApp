@@ -32,6 +32,8 @@ public final class EndingViewModel {
     }
 
     public func handleOnAppear() {
+        DailyMealSelectionStore.save(selectedMeal)
+
         if let randomGreeting = greetings.randomElement() {
             enjoymentGreeting = randomGreeting
         }
