@@ -78,14 +78,22 @@ struct RecommendationView: View {
             }
             .frame(maxWidth: .infinity)
 
-            Text(meal.description)
+            descriptionScrollView(meal.description)
+        }
+    }
+
+    private func descriptionScrollView(_ description: String) -> some View {
+        ScrollView(.vertical, showsIndicators: true) {
+            Text(description)
                 .biteBeatFont(.custom(16), weight: .regular)
                 .foregroundStyle(Color(uiColor: .systemGray))
                 .lineSpacing(3)
                 .multilineTextAlignment(.center)
-                .lineLimit(4)
-                .minimumScaleFactor(0.88)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 2)
         }
+        .frame(height: 88)
+        .scrollBounceBehavior(.basedOnSize)
     }
 
     private var mainActionButtons: some View {
@@ -134,20 +142,26 @@ struct RecommendationView: View {
                     .multilineTextAlignment(.center)
             }
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                ForEach(viewModel.alternatives) { meal in
-                    Button {
-                        viewModel.selectAlternativeCard(meal)
-                    } label: {
-                        alternativeCard(for: meal, isSelected: viewModel.selectedAlternative?.id == meal.id)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                        ForEach(viewModel.alternatives) { meal in
+                            Button {
+                                viewModel.selectAlternativeCard(meal)
+                            } label: {
+                                alternativeCard(for: meal, isSelected: viewModel.selectedAlternative?.id == meal.id)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     }
-                    .buttonStyle(.plain)
-                }
-            }
 
-            if let selectedAlternative = viewModel.selectedAlternative {
-                alternativeDescriptionBox(for: selectedAlternative)
+                    if let selectedAlternative = viewModel.selectedAlternative {
+                        alternativeDescriptionBox(for: selectedAlternative)
+                    }
+                }
+                .padding(.vertical, 4)
             }
+            .frame(maxHeight: 430)
 
             alternativeActionButtons
                 .padding(.top, 8)
