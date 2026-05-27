@@ -22,6 +22,9 @@ struct EndingView: View {
         .onAppear {
             viewModel.handleOnAppear()
         }
+        .onDisappear {
+            viewModel.handleOnDisappear()
+        }
     }
 }
 
