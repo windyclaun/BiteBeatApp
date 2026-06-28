@@ -222,9 +222,10 @@ struct RecommendationView: View {
 
     private func mealHeroImage(for meal: Meal, size: CGFloat) -> some View {
         FoodImageView(
-            mealTitle: meal.title,
-            wikipediaQuery: meal.wikipediaSearchQuery,
-            fallbackUrl: meal.imageUrl
+            directImageURL: meal.imageUrl,
+            searchQuery: meal.photoSearchQuery,
+            systemImage: meal.systemImage,
+            gradientColors: meal.swiftUIColors
         )
         .frame(width: size, height: size)
         .clipShape(Circle())

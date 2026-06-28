@@ -2,80 +2,128 @@ import SwiftUI
 
 public final class FoodImageService {
     public static let shared = FoodImageService()
-    
+
     private init() {}
-    
-    // Queries Wikipedia/Wikimedia API asynchronously without an API key
-    public func fetchImage(for query: String) async -> String? {
-        let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
-        let urlString = "https://id.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=\(encodedQuery)&gsrlimit=1&prop=pageimages&format=json&pithumbsize=600"
-        
-        guard let url = URL(string: urlString) else { return nil }
-        
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let queryDict = json["query"] as? [String: Any],
-               let pages = queryDict["pages"] as? [String: Any] {
-                
-                if let firstPageKey = pages.keys.first,
-                   let pageData = pages[firstPageKey] as? [String: Any],
-                   let thumbnail = pageData["thumbnail"] as? [String: Any],
-                   let sourceUrl = thumbnail["source"] as? String {
-                    return sourceUrl
-                }
-            }
-        } catch {
-            print("Failed to fetch Wikipedia image: \(error)")
+
+    // Caches resolved URLs per query for the session. A stored nil means
+    // "already searched, no photo found" so we don't re-hit the network.
+    private var cache: [String: String?] = [:]
+
+    public func resolveImageURL(for query: String) async -> String? {
+        let key = query.lowercased()
+        if let cached = cache[key] {
+            return cached
         }
-        
-        return nil
+        let resolved = await fetchFromPexels(query: query)
+        cache[key] = resolved
+        return resolved
+    }
+
+    private func fetchFromPexels(query: String) async -> String? {
+        guard
+            let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+            let url = URL(string: "https://api.pexels.com/v1/search?query=\(encoded)&per_page=1&orientation=square")
+        else {
+            return nil
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue(Secrets.pexelsAPIKey, forHTTPHeaderField: "Authorization")
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                return nil
+            }
+            let decoded = try JSONDecoder().decode(PexelsResponse.self, from: data)
+            return decoded.photos.first?.src.large
+        } catch {
+            return nil
+        }
     }
 }
 
+private struct PexelsResponse: Decodable {
+    let photos: [PexelsPhoto]
+}
+
+private struct PexelsPhoto: Decodable {
+    let src: PexelsSource
+}
+
+private struct PexelsSource: Decodable {
+    let large: String
+}
+
 struct FoodImageView: View {
-    let mealTitle: String
-    let wikipediaQuery: String
-    let fallbackUrl: String
-    
-    @State private var activeImageUrl: String? = nil
-    @State private var isLoading = true
-    
+    let directImageURL: String
+    let searchQuery: String
+    let systemImage: String
+    let gradientColors: [Color]
+
+    private enum LoadState: Equatable {
+        case loading
+        case loaded(URL)
+        case unavailable
+    }
+
+    @State private var state: LoadState = .loading
+
     var body: some View {
         ZStack {
-            if let imageUrlString = activeImageUrl, let imageUrl = URL(string: imageUrlString) {
-                AsyncImage(url: imageUrl) { phase in
-                    switch phase {
-                    case .empty:
-                        loadingPlaceholder
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .transition(.scale.combined(with: .opacity))
-                    case .failure:
-                        fallbackPlaceholder
-                    @unknown default:
-                        loadingPlaceholder
-                    }
-                }
-            } else {
+            switch state {
+            case .loading:
                 loadingPlaceholder
+            case .loaded(let url):
+                photo(url)
+            case .unavailable:
+                fallbackVisual
             }
         }
-        .task {
-            // Try to fetch image from Wikipedia Public API
-            if let liveUrl = await FoodImageService.shared.fetchImage(for: wikipediaQuery) {
-                activeImageUrl = liveUrl
-            } else {
-                // Use Unsplash fallback image if Wikipedia API fails
-                activeImageUrl = fallbackUrl
-            }
-            isLoading = false
+        .task(id: directImageURL + "|" + searchQuery) {
+            await resolve()
         }
     }
-    
+
+    private func resolve() async {
+        if let direct = validURL(directImageURL) {
+            state = .loaded(direct)
+            return
+        }
+
+        state = .loading
+        if let resolved = await FoodImageService.shared.resolveImageURL(for: searchQuery),
+           let url = validURL(resolved) {
+            state = .loaded(url)
+        } else {
+            state = .unavailable
+        }
+    }
+
+    private func validURL(_ string: String) -> URL? {
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        return URL(string: trimmed)
+    }
+
+    private func photo(_ url: URL) -> some View {
+        AsyncImage(url: url) { phase in
+            switch phase {
+            case .empty:
+                loadingPlaceholder
+            case .success(let image):
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .transition(.scale.combined(with: .opacity))
+            case .failure:
+                fallbackVisual
+            @unknown default:
+                fallbackVisual
+            }
+        }
+    }
+
     private var loadingPlaceholder: some View {
         RoundedRectangle(cornerRadius: 18)
             .fill(LinearGradient(
@@ -88,15 +136,19 @@ struct FoodImageView: View {
                     .tint(.pink)
             }
     }
-    
-    private var fallbackPlaceholder: some View {
+
+    // Guaranteed last-resort visual built from the meal's own symbol and colors.
+    private var fallbackVisual: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 18)
-                .fill(.quaternary.opacity(0.4))
-            
-            Image(systemName: "fork.knife.circle.fill")
-                .font(.largeTitle)
-                .foregroundStyle(.pink)
+            LinearGradient(
+                colors: gradientColors.isEmpty ? [.pink, .orange] : gradientColors,
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            Image(systemName: systemImage.isEmpty ? "fork.knife" : systemImage)
+                .font(.system(size: 34, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.9))
         }
     }
 }

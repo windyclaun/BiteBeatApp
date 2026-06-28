@@ -133,3 +133,9 @@ iOSInjectionProject/
 **/xcshareddata/WorkspaceSettings.xcsettings
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,swift,xcode
+
+# Secrets (API keys) - do not commit
+Secrets.swift
+
+# Claude Code local overrides
+.claude/settings.local.json

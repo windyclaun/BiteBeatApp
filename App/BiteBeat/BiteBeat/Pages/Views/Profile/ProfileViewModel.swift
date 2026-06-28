@@ -15,8 +15,7 @@ public final class ProfileViewModel {
     public var dominantVibeDescription: String = "Loading..."
     public var isLoadingVibe = true
     public var storefrontCountry = "Loading…"
-    public var mealHistory: [DailyMealSelection] = []
-    
+
     private static let countries: [String: String] = [
         "id": "Indonesia 🇮🇩",
         "us": "United States 🇺🇸",
@@ -30,12 +29,9 @@ public final class ProfileViewModel {
         "fr": "France 🇫🇷"
     ]
     
-    public init() {
-        refreshMealHistory()
-    }
-    
+    public init() {}
+
     public func fetchRecentSongsAndAnalyze(using musicSession: MusicSessionManager) async {
-        refreshMealHistory()
         isLoadingVibe = true
         
         let countryCode = await musicSession.fetchStorefrontCountryCode()
@@ -70,11 +66,7 @@ public final class ProfileViewModel {
         
         isLoadingVibe = false
     }
-    
-    public func refreshMealHistory() {
-        mealHistory = DailyMealSelectionStore.recentSelections(limit: 3)
-    }
-    
+
     public func openSystemSettings() {
         guard let url = URL(string: UIApplication.openSettingsURLString),
               UIApplication.shared.canOpenURL(url) else { return }

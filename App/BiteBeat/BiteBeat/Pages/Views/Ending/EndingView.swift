@@ -1,7 +1,9 @@
 import BiteBeatMusic
+import SwiftData
 import SwiftUI
 
 struct EndingView: View {
+    @Environment(\.modelContext) private var modelContext
     @State private var viewModel: EndingViewModel
 
     init(selectedMeal: Meal) {
@@ -20,7 +22,7 @@ struct EndingView: View {
         }
         .navigationBarBackButtonHidden()
         .onAppear {
-            viewModel.handleOnAppear()
+            viewModel.handleOnAppear(in: modelContext)
         }
     }
 }

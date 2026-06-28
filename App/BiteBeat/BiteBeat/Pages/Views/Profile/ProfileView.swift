@@ -1,9 +1,11 @@
 import BiteBeatMusic
+import SwiftData
 import SwiftUI
 
 struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(MusicSessionManager.self) private var musicSession
+    @Query(sort: \MealRecord.selectedAt, order: .reverse) private var mealRecords: [MealRecord]
     @State private var viewModel = ProfileViewModel()
     @State private var showProfileDetails = false
 
@@ -33,9 +35,6 @@ struct ProfileView: View {
         }
         .task {
             await viewModel.fetchRecentSongsAndAnalyze(using: musicSession)
-        }
-        .onAppear {
-            viewModel.refreshMealHistory()
         }
     }
 
@@ -117,12 +116,12 @@ struct ProfileView: View {
                     .foregroundStyle(.secondary)
             }
 
-            if viewModel.mealHistory.isEmpty {
+            if mealRecords.isEmpty {
                 emptyHistoryCard
             } else {
                 VStack(spacing: 14) {
-                    ForEach(viewModel.mealHistory, id: \.selectedAt) { selection in
-                        historyRow(selection)
+                    ForEach(Array(mealRecords.prefix(3))) { record in
+                        historyRow(record)
                     }
                 }
             }
@@ -150,24 +149,25 @@ struct ProfileView: View {
         .shadow(color: .black.opacity(0.07), radius: 14, y: 8)
     }
 
-    private func historyRow(_ selection: DailyMealSelection) -> some View {
+    private func historyRow(_ record: MealRecord) -> some View {
         HStack(spacing: 16) {
             FoodImageView(
-                mealTitle: selection.meal.title,
-                wikipediaQuery: selection.meal.wikipediaSearchQuery,
-                fallbackUrl: selection.meal.imageUrl
+                directImageURL: record.meal.imageUrl,
+                searchQuery: record.meal.photoSearchQuery,
+                systemImage: record.mealSystemImage,
+                gradientColors: record.meal.swiftUIColors
             )
             .frame(width: 64, height: 64)
             .clipShape(Circle())
             .shadow(color: .black.opacity(0.12), radius: 8, y: 4)
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(selection.meal.title)
+                Text(record.mealTitle)
                     .font(.title3.bold())
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
-                Text(selection.selectedAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).year()))
+                Text(record.selectedAt.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated).year()))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }

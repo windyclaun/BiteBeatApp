@@ -1,9 +1,13 @@
 import SwiftUI
+import SwiftData
+import CoreLocation
 import BiteBeatMusic
 import FoundationModels
 
 struct HomeView: View {
     @Environment(MusicSessionManager.self) private var musicSession
+    @Environment(LocationService.self) private var locationService
+    @Environment(\.modelContext) private var modelContext
     @AppStorage("hasAcknowledgedAppleIntelligence") private var hasAcknowledgedAppleIntelligence = true
     @State private var viewModel = HomeViewModel()
     @State private var expandedOpacity: Double = 1.0
@@ -187,6 +191,7 @@ struct HomeView: View {
                 if viewModel.navigateToLoading {
                     AnalysisLoadingView(
                         songsToAnalyze: viewModel.recentSongs,
+                        useLocation: viewModel.useLocationForAnalysis,
                         onAnalysisComplete: { vibeName, mainMeal, alternatives in
                             viewModel.calculatedVibeName = vibeName
                             viewModel.calculatedMain = mainMeal
@@ -233,6 +238,20 @@ struct HomeView: View {
                     Text("Connecting your Apple Music allows us to analyze your real listening history for a highly personalized food recommendation.")
                 }
             }
+            .alert("Location Access Needed", isPresented: $viewModel.showLocationAlert) {
+                Button("Open Settings") {
+                    viewModel.openSystemSettings()
+                }
+                Button("Continue Without Location") {
+                    viewModel.useLocationForAnalysis = false
+                    withAnimation(.easeInOut) {
+                        viewModel.navigateToLoading = true
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("BiteBeat needs your location to find places to eat around you. Enable it in Settings, or continue and let the app pick a meal for you freely.")
+            }
             .navigationDestination(isPresented: $viewModel.navigateToRecommendation) {
                 if let vibeName = viewModel.calculatedVibeName, let main = viewModel.calculatedMain {
                     RecommendationView(
@@ -248,7 +267,7 @@ struct HomeView: View {
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("ResetHome"))) { _ in
-                viewModel.refreshSelectedMealToday()
+                viewModel.refreshSelectedMealToday(in: modelContext)
                 withAnimation(.easeInOut) {
                     viewModel.navigateToLoading = false
                 }
@@ -277,8 +296,34 @@ struct HomeView: View {
                 }
             }
             .onAppear {
-                viewModel.refreshSelectedMealToday()
+                viewModel.refreshSelectedMealToday(in: modelContext)
                 triggerCardStackAnimation()
+            }
+        }
+    }
+
+    private func beginAnalysisFlow() {
+        if musicSession.isAuthorized {
+            requestLocationThenAnalyze()
+        } else {
+            viewModel.showConnectAlert = true
+        }
+    }
+
+    private func requestLocationThenAnalyze() {
+        switch locationService.authorizationStatus {
+        case .denied, .restricted:
+            viewModel.showLocationAlert = true
+        case .notDetermined:
+            locationService.requestWhenInUseAuthorization()
+            viewModel.useLocationForAnalysis = true
+            withAnimation(.easeInOut) {
+                viewModel.navigateToLoading = true
+            }
+        default:
+            viewModel.useLocationForAnalysis = true
+            withAnimation(.easeInOut) {
+                viewModel.navigateToLoading = true
             }
         }
     }
@@ -344,7 +389,7 @@ struct HomeView: View {
     
     private var analyzeMoodButton: some View {
         Button {
-            viewModel.refreshSelectedMealToday()
+            viewModel.refreshSelectedMealToday(in: modelContext)
 
             if !viewModel.canAnalyzeToday {
                 viewModel.navigateToSavedMeal = true
@@ -360,20 +405,15 @@ struct HomeView: View {
                 }
             }
 
-            if musicSession.isAuthorized {
-                withAnimation(.easeInOut) {
-                    viewModel.navigateToLoading = true
-                }
-            } else {
-                viewModel.showConnectAlert = true
-            }
+            beginAnalysisFlow()
         } label: {
             HStack {
                 if let selectedMeal = viewModel.selectedMealToday {
                     FoodImageView(
-                        mealTitle: selectedMeal.title,
-                        wikipediaQuery: selectedMeal.wikipediaSearchQuery,
-                        fallbackUrl: selectedMeal.imageUrl
+                        directImageURL: selectedMeal.imageUrl,
+                        searchQuery: selectedMeal.photoSearchQuery,
+                        systemImage: selectedMeal.systemImage,
+                        gradientColors: selectedMeal.swiftUIColors
                     )
                     .frame(width: 48, height: 48)
                     .clipShape(Circle())

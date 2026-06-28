@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import Observation
 import BiteBeatMusic
 
@@ -61,17 +62,19 @@ public static let defaultPlaylist: [BiteMusicTrack] = [
     public var calculatedMain: Meal?
     public var calculatedAlternatives: [Meal] = []
     public var selectedMealToday: Meal?
-    
-    public init() {
-        refreshSelectedMealToday()
-    }
-    
+
+    // Location-based analysis gating
+    public var showLocationAlert = false
+    public var useLocationForAnalysis = true
+
+    public init() {}
+
     public var canAnalyzeToday: Bool {
         selectedMealToday == nil
     }
-    
-    public func refreshSelectedMealToday() {
-        selectedMealToday = DailyMealSelectionStore.selectedMealForToday()
+
+    public func refreshSelectedMealToday(in context: ModelContext) {
+        selectedMealToday = MealRecordStore.selectedMealToday(in: context)
     }
     
     public func fetchRecentSongs(using musicSession: MusicSessionManager) async {

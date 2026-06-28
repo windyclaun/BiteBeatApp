@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import Observation
 import BiteBeatMusic
 
@@ -31,11 +32,14 @@ public final class EndingViewModel {
         self.selectedMeal = selectedMeal
     }
 
-    public func handleOnAppear() {
-        DailyMealSelectionStore.save(selectedMeal)
-
+    public func handleOnAppear(in context: ModelContext) {
         if let randomGreeting = greetings.randomElement() {
             enjoymentGreeting = randomGreeting
+        }
+
+        Task {
+            let resolvedURL = await FoodImageService.shared.resolveImageURL(for: selectedMeal.photoSearchQuery)
+            MealRecordStore.saveTodaySelection(selectedMeal, resolvedImageURL: resolvedURL, in: context)
         }
     }
 }

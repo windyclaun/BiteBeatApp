@@ -6,19 +6,25 @@
 //
 
 import SwiftUI
+import SwiftData
 import Observation
 import BiteBeatMusic
 
 struct AnalysisLoadingView: View {
     @Environment(MusicSessionManager.self) private var musicSession
+    @Environment(LocationService.self) private var locationService
+    @Environment(\.modelContext) private var modelContext
     @State private var viewModel: AnalysisLoadingViewModel
+    let useLocation: Bool
     let onAnalysisComplete: @MainActor (String, Meal, [Meal]) -> Void
     let onCancel: @MainActor () -> Void
-    
+
     init(songsToAnalyze: [BiteMusicTrack],
+         useLocation: Bool,
          onAnalysisComplete: @escaping @MainActor (String, Meal, [Meal]) -> Void,
          onCancel: @escaping @MainActor () -> Void) {
         _viewModel = State(initialValue: AnalysisLoadingViewModel(songsToAnalyze: songsToAnalyze))
+        self.useLocation = useLocation
         self.onAnalysisComplete = onAnalysisComplete
         self.onCancel = onCancel
     }
@@ -45,7 +51,11 @@ struct AnalysisLoadingView: View {
         .background(Color(uiColor: .systemGroupedBackground))
         .task {
             await musicSession.playRandomTrack(from: viewModel.displaySongs)
-            viewModel.startAnalysisAndAnimations { vibeName, mainMeal, alternatives in
+            viewModel.startAnalysisAndAnimations(
+                locationService: locationService,
+                modelContext: modelContext,
+                useLocation: useLocation
+            ) { vibeName, mainMeal, alternatives in
                 onAnalysisComplete(vibeName, mainMeal, alternatives)
             }
         }
@@ -300,7 +310,11 @@ public final class AnalysisLoadingViewModel {
     
     private var workflowTask: Task<Void, Never>?
     private var onCompleteCallback: (@MainActor (String, Meal, [Meal]) -> Void)?
-    
+
+    private var locationService: LocationService?
+    private var modelContext: ModelContext?
+    private var useLocation = false
+
     public init(songsToAnalyze: [BiteMusicTrack]) {
         self.songsToAnalyze = songsToAnalyze
     }
@@ -318,9 +332,17 @@ public final class AnalysisLoadingViewModel {
         return songsToAnalyze
     }
     
-    public func startAnalysisAndAnimations(onComplete: @escaping @MainActor (String, Meal, [Meal]) -> Void) {
+    public func startAnalysisAndAnimations(
+        locationService: LocationService,
+        modelContext: ModelContext,
+        useLocation: Bool,
+        onComplete: @escaping @MainActor (String, Meal, [Meal]) -> Void
+    ) {
         guard workflowTask == nil else { return }
 
+        self.locationService = locationService
+        self.modelContext = modelContext
+        self.useLocation = useLocation
         self.onCompleteCallback = onComplete
         
         // Start continuous background visual effects
@@ -347,7 +369,10 @@ public final class AnalysisLoadingViewModel {
         // Start backend analysis service task
         let analysisTask = Task { () -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) in
             if #available(iOS 26.0, *) {
-                let analyzer = MusicToFoodAnalyzer.makeDefault()
+                let places = await self.prepareFoodPlaces()
+                let override = UserDefaults.standard.string(forKey: "overrideAnalyzerMode") ?? "auto"
+                let mode: AnalyzerMode = (override == "forceCreative" || places.isEmpty) ? .creative : .database(places: places)
+                let analyzer = MusicToFoodAnalyzer(language: MusicToFoodAnalyzer.storedLanguage(), mode: mode)
                 do {
                     return try await analyzer.analyze(songs: songsToAnalyze)
                 } catch {
@@ -438,19 +463,48 @@ public final class AnalysisLoadingViewModel {
         }
     }
     
+    private func prepareFoodPlaces() async -> [FoodPlaceInfo] {
+        guard useLocation, let modelContext else { return [] }
+
+        let cutoff = Date().addingTimeInterval(-30 * 60)
+        var descriptor = FetchDescriptor<FoodPlace>(
+            predicate: #Predicate { $0.fetchedAt >= cutoff },
+            sortBy: [SortDescriptor(\.distanceMeters)]
+        )
+        descriptor.fetchLimit = 20
+        if let cached = try? modelContext.fetch(descriptor), !cached.isEmpty {
+            return cached.map(\.info)
+        }
+
+        guard let locationService else { return [] }
+        do {
+            let location = try await locationService.requestOneTimeLocation()
+            let places = try await NearbyFoodService().searchNearby(near: location)
+            try? modelContext.delete(model: FoodPlace.self)
+            for place in places {
+                modelContext.insert(place)
+            }
+            try? modelContext.save()
+            return places.map(\.info)
+        } catch {
+            return []
+        }
+    }
+
     private func fallbackRecommendation(errorMessage: String) -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal]) {
         return (
             vibeName: "Classic Mix",
             vibeDescription: errorMessage,
             mainMeal: Meal(
-                title: "Fallback Nasi Goreng",
+                title: "Nasi Goreng Spesial",
                 price: "Rp 25.000",
-                location: "Warung Kebon (0.1 km)",
+                location: "Warung Kebon",
                 calories: "500 kcal",
                 description: "Nasi goreng kecap tradisional dengan telur mata sapi renyah, kerupuk, dan irisan mentimun segar.",
-                crazyFunDescription: "Warning — this meal may trigger spontaneous shoulder dancing.",
+                crazyFunDescription: "Warning - this meal may trigger spontaneous shoulder dancing.",
                 systemImage: "flame.fill",
-                gradientColors: ["orange", "red"]
+                gradientColors: ["orange", "red"],
+                imageQuery: "indonesian fried rice"
             ),
             alternatives: []
         )
@@ -482,9 +536,12 @@ public final class AnalysisLoadingViewModel {
                 artworkURL: nil
             )
         ],
+        useLocation: false,
         onAnalysisComplete: { _, _, _ in },
         onCancel: { }
     )
     .environment(MusicSessionManager())
+    .environment(LocationService())
+    .modelContainer(for: [FoodPlace.self, MealRecord.self], inMemory: true)
 }
 

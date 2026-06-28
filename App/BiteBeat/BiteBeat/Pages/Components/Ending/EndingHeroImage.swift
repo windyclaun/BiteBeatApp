@@ -12,9 +12,10 @@ struct EndingHeroImage: View {
                 EndingCircleLight(imageSize: imageSize)
 
                 FoodImageView(
-                    mealTitle: meal.title,
-                    wikipediaQuery: meal.wikipediaSearchQuery,
-                    fallbackUrl: meal.imageUrl
+                    directImageURL: meal.imageUrl,
+                    searchQuery: meal.photoSearchQuery,
+                    systemImage: meal.systemImage,
+                    gradientColors: meal.swiftUIColors
                 )
                 .frame(width: imageSize, height: imageSize)
                 .clipShape(Circle())

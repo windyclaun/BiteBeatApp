@@ -14,10 +14,11 @@ public struct Meal: Identifiable, Hashable, Codable, Sendable {
     public let systemImage: String
     public let gradientColors: [String] // Color name strings for generating SwiftUI gradients
     public let imageUrl: String
+    public let imageQuery: String
     public let crazyFunDescription: String
 
     nonisolated public static let defaultCrazyFunDescription = "Warning - this meal may trigger spontaneous shoulder dancing."
-    
+
     nonisolated public init(
         title: String,
         price: String,
@@ -27,7 +28,8 @@ public struct Meal: Identifiable, Hashable, Codable, Sendable {
         crazyFunDescription: String = Meal.defaultCrazyFunDescription,
         systemImage: String,
         gradientColors: [String],
-        imageUrl: String = ""
+        imageUrl: String = "",
+        imageQuery: String = ""
     ) {
         self.id = UUID()
         self.title = title
@@ -38,11 +40,13 @@ public struct Meal: Identifiable, Hashable, Codable, Sendable {
         self.systemImage = systemImage
         self.gradientColors = gradientColors
         self.imageUrl = imageUrl
+        self.imageQuery = imageQuery
         self.crazyFunDescription = crazyFunDescription
     }
-    
-    public var wikipediaSearchQuery: String {
-        return title
+
+    // Keyword used to look up a photo of the dish itself (not the restaurant).
+    public var photoSearchQuery: String {
+        imageQuery.isEmpty ? title : imageQuery
     }
     
     // Cleans up any trailing distance labels from the restaurant location
@@ -88,6 +92,7 @@ fileprivate struct AIMeal: Codable {
     let crazyFunDescription: String?
     let systemImage: String
     let gradientColors: [String]
+    let imageQuery: String?
 }
 
 public enum AnalyzerLanguage: String, Sendable {
@@ -95,9 +100,16 @@ public enum AnalyzerLanguage: String, Sendable {
     case english = "English"
 }
 
+public struct FoodPlaceInfo: Codable, Sendable {
+    public let name: String
+    public let address: String
+    public let distance: String
+    public let category: String
+}
+
 public enum AnalyzerMode: Sendable {
     case creative
-    case database(jsonString: String)
+    case database(places: [FoodPlaceInfo])
 }
 
 @available(iOS 26.0, *)
@@ -110,28 +122,15 @@ public final class MusicToFoodAnalyzer: Sendable {
         self.mode = mode
     }
     
-    /// Creates a MusicToFoodAnalyzer that grounds recommendations using the local 'foods.json' database asset or creative mode based on UserDefaults.
+    /// Reads the user's preferred prompt language from UserDefaults.
+    public static func storedLanguage() -> AnalyzerLanguage {
+        let stored = UserDefaults.standard.string(forKey: "analyzerLanguage") ?? "english"
+        return stored == "indonesian" ? .indonesian : .english
+    }
+
+    /// Creates a creative-mode analyzer using the stored language preference.
     public static func makeDefault() -> MusicToFoodAnalyzer {
-        // 1. Read language preference
-        let storedLanguage = UserDefaults.standard.string(forKey: "analyzerLanguage") ?? "english"
-        let language: AnalyzerLanguage = (storedLanguage == "indonesian") ? .indonesian : .english
-        
-        // 2. Determine mode based on override
-        let storedModeOverride = UserDefaults.standard.string(forKey: "overrideAnalyzerMode") ?? "auto"
-        var mode = AnalyzerMode.creative
-        
-        if storedModeOverride == "forceCreative" {
-            mode = .creative
-        } else {
-            // Attempt to load database
-            if let url = Bundle.main.url(forResource: "foods", withExtension: "json"),
-               let data = try? Data(contentsOf: url),
-               let jsonString = String(data: data, encoding: .utf8) {
-                mode = .database(jsonString: jsonString)
-            }
-        }
-        
-        return MusicToFoodAnalyzer(language: language, mode: mode)
+        MusicToFoodAnalyzer(language: storedLanguage(), mode: .creative)
     }
     
     /// Main analysis function that translates tracks into food recommendations (one main, two alternatives) using Apple Intelligence.
@@ -164,14 +163,16 @@ public final class MusicToFoodAnalyzer: Sendable {
         switch mode {
         case .creative:
             promptText += "\n\nYou are free to recommend any suitable Indonesian food."
-        case .database(let jsonString):
+        case .database(let places):
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            let placesJSON = (try? encoder.encode(places)).flatMap { String(data: $0, encoding: .utf8) } ?? "[]"
             promptText += """
-            
-            
-            CRITICAL INSTRUCTION: You MUST ONLY select the 3 food dishes from the following JSON database. Do not invent new foods.
-            If the selected food has a 'calories' value in the database, use it exactly. If it does NOT have a 'calories' value (or is missing), you must carefully estimate the calories yourself (e.g. "500 kcal").
-            Database:
-            \(jsonString)
+
+
+            CRITICAL INSTRUCTION: You MUST recommend food available at real restaurants from the NEARBY RESTAURANTS list below. The 'location' field in your JSON output MUST be the EXACT 'name' of a restaurant from this list — do NOT invent restaurants. This app helps the user grab lunch nearby before getting back to work, so PRIORITIZE restaurants with "category": "nearby" (within 500m) over "others", using 'distance' to decide. For each recommended meal, the 'title' must be a dish that this kind of restaurant realistically serves, and estimate the 'calories' yourself (e.g. "500 kcal").
+            NEARBY RESTAURANTS:
+            \(placesJSON)
             """
         }
         
@@ -190,7 +191,8 @@ public final class MusicToFoodAnalyzer: Sendable {
             "description": "Appetizing description of the food",
             "crazyFunDescription": "Crazy fun fact about the food",
             "systemImage": "flame.fill",
-            "gradientColors": ["orange", "red"]
+            "gradientColors": ["orange", "red"],
+            "imageQuery": "simple generic name of the dish in English for a stock photo search, e.g. fried rice"
           },
           "alternatives": [
             {
@@ -201,7 +203,8 @@ public final class MusicToFoodAnalyzer: Sendable {
               "description": "Appetizing description",
               "crazyFunDescription": "Crazy fun fact about the food",
               "systemImage": "leaf.fill",
-              "gradientColors": ["green", "teal"]
+              "gradientColors": ["green", "teal"],
+              "imageQuery": "english dish keyword for photo, e.g. meatball soup"
             },
             {
               "title": "Dish name 3",
@@ -211,10 +214,13 @@ public final class MusicToFoodAnalyzer: Sendable {
               "description": "Appetizing description",
               "crazyFunDescription": "Crazy fun fact about the food",
               "systemImage": "star.fill",
-              "gradientColors": ["purple", "pink"]
+              "gradientColors": ["purple", "pink"],
+              "imageQuery": "english dish keyword for photo, e.g. grilled chicken"
             }
           ]
         }
+
+        For "imageQuery": give the plain, generic dish name in English (no restaurant name, no adjectives) so a stock photo of THAT food can be found. Examples: "fried rice", "meatball soup", "beef noodle soup", "grilled chicken".
         """
         
         let session = LanguageModelSession(model: SystemLanguageModel(useCase: .general))
@@ -239,9 +245,10 @@ public final class MusicToFoodAnalyzer: Sendable {
             description: result.mainMeal.description,
             crazyFunDescription: result.mainMeal.crazyFunDescription ?? Meal.defaultCrazyFunDescription,
             systemImage: result.mainMeal.systemImage,
-            gradientColors: result.mainMeal.gradientColors
+            gradientColors: result.mainMeal.gradientColors,
+            imageQuery: result.mainMeal.imageQuery ?? ""
         )
-        
+
         let alternatives = result.alternatives.map {
             Meal(
                 title: $0.title,
@@ -251,7 +258,8 @@ public final class MusicToFoodAnalyzer: Sendable {
                 description: $0.description,
                 crazyFunDescription: $0.crazyFunDescription ?? Meal.defaultCrazyFunDescription,
                 systemImage: $0.systemImage,
-                gradientColors: $0.gradientColors
+                gradientColors: $0.gradientColors,
+                imageQuery: $0.imageQuery ?? ""
             )
         }
         
