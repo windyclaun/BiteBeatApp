@@ -7,13 +7,16 @@ struct AnalysisLoadingView: View {
     @Environment(LocationManager.self) private var locationManager
     @State private var viewModel: AnalysisLoadingViewModel
     let onAnalysisComplete: @MainActor (String, Meal, [Meal], [RestaurantDishes]) -> Void
+    let onError: @MainActor () -> Void
     let onCancel: @MainActor () -> Void
 
     init(songsToAnalyze: [BiteMusicTrack],
          onAnalysisComplete: @escaping @MainActor (String, Meal, [Meal], [RestaurantDishes]) -> Void,
+         onError: @escaping @MainActor () -> Void,
          onCancel: @escaping @MainActor () -> Void) {
         _viewModel = State(initialValue: AnalysisLoadingViewModel(songsToAnalyze: songsToAnalyze))
         self.onAnalysisComplete = onAnalysisComplete
+        self.onError = onError
         self.onCancel = onCancel
     }
 
@@ -37,9 +40,11 @@ struct AnalysisLoadingView: View {
         .background(Color(.systemGroupedBackground))
         .task {
             await musicSession.playRandomTrack(from: viewModel.displaySongs)
-            viewModel.startAnalysisAndAnimations(using: locationManager) { vibeName, mainMeal, alternatives, restaurants in
+            viewModel.startAnalysisAndAnimations(using: locationManager, onComplete: { vibeName, mainMeal, alternatives, restaurants in
                 onAnalysisComplete(vibeName, mainMeal, alternatives, restaurants)
-            }
+            }, onError: {
+                onError()
+            })
         }
         .onDisappear {
             musicSession.pausePlayback()
@@ -251,6 +256,7 @@ public final class AnalysisLoadingViewModel {
 
     private var workflowTask: Task<Void, Never>?
     private var onCompleteCallback: (@MainActor (String, Meal, [Meal], [RestaurantDishes]) -> Void)?
+    private var onErrorCallback: (@MainActor () -> Void)?
 
     public init(songsToAnalyze: [BiteMusicTrack]) {
         self.songsToAnalyze = songsToAnalyze
@@ -271,10 +277,12 @@ public final class AnalysisLoadingViewModel {
 
     public func startAnalysisAndAnimations(
         using locationManager: LocationManager,
-        onComplete: @escaping @MainActor (String, Meal, [Meal], [RestaurantDishes]) -> Void
+        onComplete: @escaping @MainActor (String, Meal, [Meal], [RestaurantDishes]) -> Void,
+        onError: @escaping @MainActor () -> Void
     ) {
         guard workflowTask == nil else { return }
         self.onCompleteCallback = onComplete
+        self.onErrorCallback = onError
 
         withAnimation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
             pulseScale = 1.05
@@ -289,6 +297,7 @@ public final class AnalysisLoadingViewModel {
         workflowTask?.cancel()
         workflowTask = nil
         onCompleteCallback = nil
+        onErrorCallback = nil
     }
 
     private func performAnalysisWorkflow(using locationManager: LocationManager) async {
@@ -311,26 +320,26 @@ public final class AnalysisLoadingViewModel {
             ? "Found \(nearbyRestaurants.count) nearby restaurants. Analyzing vibes..."
             : "Extracting Music Library Vibes..."
 
-        let analysisTask: Task<(vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal], restaurants: [RestaurantDishes]), Never>
+        let analysisTask: Task<(vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal], restaurants: [RestaurantDishes])?, Never>
         analysisTask = Task {
             let analyzer = MusicToFoodAnalyzer.makeDefault()
             if useMapsFlow {
                 do {
                     let result = try await analyzer.analyze(songs: songsToAnalyze, nearbyRestaurants: Array(nearbyRestaurants.prefix(3)))
                     guard let first = result.restaurants.first, let mainDish = first.dishes.first else {
-                        return self.fallbackRecommendation(errorMessage: "No dishes found.")
+                        return nil
                     }
                     let alternatives: [Meal] = result.restaurants.dropFirst().compactMap { $0.dishes.first }
                     return (result.vibeName, result.vibeDescription, mainDish, alternatives, result.restaurants)
                 } catch {
-                    return self.fallbackRecommendation(errorMessage: "AI analysis failed, using fallback.")
+                    return nil
                 }
             } else {
                 do {
                     let result = try await analyzer.analyze(songs: songsToAnalyze)
                     return (result.vibeName, result.vibeDescription, result.mainMeal, result.alternatives, [])
                 } catch {
-                    return self.fallbackRecommendation(errorMessage: "Failed to load from Apple Intelligence.")
+                    return nil
                 }
             }
         }
@@ -356,7 +365,12 @@ public final class AnalysisLoadingViewModel {
         }
 
         if Task.isCancelled { return }
-        let result = await analysisTask.value
+        guard let result = await analysisTask.value else {
+            loadingStatus = "Analysis failed. Please try again."
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            onErrorCallback?()
+            return
+        }
         if Task.isCancelled { return }
 
         try? await Task.sleep(nanoseconds: 500_000_000)
@@ -394,23 +408,6 @@ public final class AnalysisLoadingViewModel {
             }
         }
     }
-
-    private func fallbackRecommendation(errorMessage: String) -> (vibeName: String, vibeDescription: String, mainMeal: Meal, alternatives: [Meal], restaurants: [RestaurantDishes]) {
-        (
-            vibeName: "Classic Mix",
-            vibeDescription: errorMessage,
-            mainMeal: Meal(
-                title: "Nasi Goreng",
-                price: "Rp 25.000",
-                location: "Warung Kebon (0.1 km)",
-                calories: "500 kcal",
-                description: "Traditional fried rice with sunny side up egg, crackers, and fresh cucumber slices.",
-                crazyFunDescription: "Warning — this meal may trigger spontaneous shoulder dancing."
-            ),
-            alternatives: [],
-            restaurants: []
-        )
-    }
 }
 
 #Preview {
@@ -421,6 +418,7 @@ public final class AnalysisLoadingViewModel {
             BiteMusicTrack(id: "preview-3", title: "Spicy Loop", artistName: "Synth Chef", genreNames: ["Electronic"], artworkURL: nil)
         ],
         onAnalysisComplete: { _, _, _, _ in },
+        onError: { },
         onCancel: { }
     )
     .environment(MusicSessionManager())

@@ -19,6 +19,7 @@ public final class HomeViewModel {
     public var isExpanded = false
     public var recentSongs: [BiteMusicTrack] = []
     public var showConnectAlert = false
+    public var showAnalysisErrorAlert = false
     public var isRefreshing = false
     public var selectedMealToday: Meal?
 
@@ -60,6 +61,6 @@ public final class HomeViewModel {
 
     private func isPrivacyAcknowledgementNeeded(_ error: any Error) -> Bool {
         let nsError = error as NSError
-        return nsError.domain == "ICError" && nsError.code == -7007
+        return nsError.domain == "ICError" && (nsError.code == -7007 || nsError.code == -7013)
     }
 }

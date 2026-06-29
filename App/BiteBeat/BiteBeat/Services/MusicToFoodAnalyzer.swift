@@ -37,42 +37,18 @@ public enum AnalyzerLanguage: String, Sendable {
     case english = "English"
 }
 
-public enum AnalyzerMode: Sendable {
-    case creative
-    case database(jsonString: String)
-}
-
 public final class MusicToFoodAnalyzer: Sendable {
     public let language: AnalyzerLanguage
-    public let mode: AnalyzerMode
-    
-    public init(language: AnalyzerLanguage = .english, mode: AnalyzerMode = .creative) {
+
+    public init(language: AnalyzerLanguage = .english) {
         self.language = language
-        self.mode = mode
     }
-    
-    /// Creates a MusicToFoodAnalyzer that grounds recommendations using the local 'foods.json' database asset or creative mode based on UserDefaults.
+
+    /// Creates a MusicToFoodAnalyzer using the user's language preference and AI-driven creative mode.
     public static func makeDefault() -> MusicToFoodAnalyzer {
-        // 1. Read language preference
         let storedLanguage = UserDefaults.standard.string(forKey: "analyzerLanguage") ?? "english"
         let language: AnalyzerLanguage = (storedLanguage == "indonesian") ? .indonesian : .english
-        
-        // 2. Determine mode based on override
-        let storedModeOverride = UserDefaults.standard.string(forKey: "overrideAnalyzerMode") ?? "auto"
-        var mode = AnalyzerMode.creative
-        
-        if storedModeOverride == "forceCreative" {
-            mode = .creative
-        } else {
-            // Attempt to load database
-            if let url = Bundle.main.url(forResource: "foods", withExtension: "json"),
-               let data = try? Data(contentsOf: url),
-               let jsonString = String(data: data, encoding: .utf8) {
-                mode = .database(jsonString: jsonString)
-            }
-        }
-        
-        return MusicToFoodAnalyzer(language: language, mode: mode)
+        return MusicToFoodAnalyzer(language: language)
     }
     
     /// Main analysis function that translates tracks into food recommendations (one main, two alternatives) using Apple Intelligence.
@@ -100,23 +76,11 @@ public final class MusicToFoodAnalyzer: Sendable {
         Be highly creative and empathetic. Synthesize the multiple songs into a cohesive culinary story. Do not just use a dry recipe description.
         """
         promptText += FoodPreferences.current().filterPromptBlock()
-        
-        switch mode {
-        case .creative:
-            promptText += "\n\nYou are free to recommend any suitable Indonesian food."
-        case .database(let jsonString):
-            promptText += """
-            
-            
-            CRITICAL INSTRUCTION: You MUST ONLY select the 3 food dishes from the following JSON database. Do not invent new foods.
-            If the selected food has a 'calories' value in the database, use it exactly. If it does NOT have a 'calories' value (or is missing), you must carefully estimate the calories yourself (e.g. "500 kcal").
-            Database:
-            \(jsonString)
-            """
-        }
-        
+
         promptText += """
-        
+
+
+        You are free to recommend any suitable Indonesian food that matches the vibe. Do not be constrained by a fixed list.
 
         Respond EXACTLY in this JSON format without any markdown blocks or extra text, providing exactly 1 main meal and exactly 2 alternative meals:
         {
@@ -244,21 +208,10 @@ public final class MusicToFoodAnalyzer: Sendable {
         """
         promptText += FoodPreferences.current().filterPromptBlock()
 
-        switch mode {
-        case .creative:
-            promptText += "\n\nYou are free to recommend any suitable dishes for each restaurant."
-        case .database(let jsonString):
-            promptText += """
-
-
-            CRITICAL INSTRUCTION: Use the following database for dish names, prices, and calorie estimates where applicable. Adapt dish names to fit each restaurant's inferred cuisine type.
-            Database:
-            \(jsonString)
-            """
-        }
-
         promptText += """
 
+
+        You are free to recommend any suitable dishes for each restaurant. Do not be constrained by a fixed list.
 
         Respond EXACTLY in this JSON format without any markdown blocks or extra text. Provide exactly \(nearbyRestaurants.count) restaurants with 3 dishes each:
         {

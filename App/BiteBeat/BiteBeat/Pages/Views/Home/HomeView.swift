@@ -194,6 +194,12 @@ struct HomeView: View {
                             )
                             path.append(HomeRoute.recommendation(data))
                         },
+                        onError: {
+                            withAnimation(.easeInOut) {
+                                isPresentingLoading = false
+                            }
+                            viewModel.showAnalysisErrorAlert = true
+                        },
                         onCancel: {
                             withAnimation(.easeInOut) {
                                 isPresentingLoading = false
@@ -203,6 +209,11 @@ struct HomeView: View {
                     .ignoresSafeArea()
                     .transition(.opacity)
                 }
+            }
+            .alert("Analysis Failed", isPresented: $viewModel.showAnalysisErrorAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Unable to generate a recommendation right now. Please check your connection or try again.")
             }
             .alert("Connect to Apple Music", isPresented: $viewModel.showConnectAlert) {
                 if musicSession.authorizationStatus == .denied {

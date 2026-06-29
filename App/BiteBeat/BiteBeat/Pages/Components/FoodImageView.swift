@@ -28,7 +28,13 @@ public final class FoodImageService {
                     return sourceUrl
                 }
             }
+        } catch is CancellationError {
+            return nil
         } catch {
+            let nsError = error as NSError
+            if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+                return nil
+            }
             logger.error("Failed to fetch Wikipedia image: \(error.localizedDescription)")
         }
 

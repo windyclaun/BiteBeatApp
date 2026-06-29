@@ -92,16 +92,25 @@ public final class MusicSessionManager {
     public func fetchRecentlyPlayed(limit: Int = 10) async throws -> [BiteMusicTrack] {
         var request = MusicRecentlyPlayedRequest<Song>()
         request.limit = limit
-        let response = try await request.response()
-        return response.items.map { song in
-            let url = song.artwork?.url(width: 300, height: 300)
-            return BiteMusicTrack(
-                id: song.id.rawValue,
-                title: song.title,
-                artistName: song.artistName,
-                genreNames: song.genreNames,
-                artworkURL: url
-            )
+        do {
+            let response = try await request.response()
+            return response.items.map { song in
+                let url = song.artwork?.url(width: 300, height: 300)
+                return BiteMusicTrack(
+                    id: song.id.rawValue,
+                    title: song.title,
+                    artistName: song.artistName,
+                    genreNames: song.genreNames,
+                    artworkURL: url
+                )
+            }
+        } catch {
+            let nsError = error as NSError
+            if nsError.domain == "ICError" && (nsError.code == -7013 || nsError.code == -7007) {
+                logger.debug("Music library access not available (ICError \(nsError.code)); returning empty.")
+                return []
+            }
+            throw error
         }
     }
 
@@ -116,16 +125,25 @@ public final class MusicSessionManager {
     public func fetchTracksByIDs(_ ids: [String]) async throws -> [BiteMusicTrack] {
         let musicItemIDs = ids.map { MusicItemID($0) }
         var request = MusicCatalogResourceRequest<Song>(matching: \.id, memberOf: musicItemIDs)
-        let response = try await request.response()
-        return response.items.map { song in
-            let url = song.artwork?.url(width: 300, height: 300)
-            return BiteMusicTrack(
-                id: song.id.rawValue,
-                title: song.title,
-                artistName: song.artistName,
-                genreNames: song.genreNames,
-                artworkURL: url
-            )
+        do {
+            let response = try await request.response()
+            return response.items.map { song in
+                let url = song.artwork?.url(width: 300, height: 300)
+                return BiteMusicTrack(
+                    id: song.id.rawValue,
+                    title: song.title,
+                    artistName: song.artistName,
+                    genreNames: song.genreNames,
+                    artworkURL: url
+                )
+            }
+        } catch {
+            let nsError = error as NSError
+            if nsError.domain == "ICError" {
+                logger.debug("Catalog fetch failed with ICError \(nsError.code); returning empty.")
+                return []
+            }
+            throw error
         }
     }
 
@@ -136,19 +154,29 @@ public final class MusicSessionManager {
             await refreshSubscription()
         }
 
-        guard canPlayCatalogContent else { return }
+        guard canPlayCatalogContent else {
+            logger.debug("Cannot play catalog content; skipping playback.")
+            return
+        }
 
-        for track in tracks.shuffled() {
+        let player = ApplicationMusicPlayer.shared
+
+        for track in tracks.prefix(2) {
             do {
                 guard let song = try await fetchPlayableSong(id: track.id) else { continue }
-                let player = ApplicationMusicPlayer.shared
                 player.queue = ApplicationMusicPlayer.Queue(for: [song], startingAt: song)
                 try await player.play()
                 return
             } catch {
-                continue
+                let nsError = error as NSError
+                if nsError.domain == "ICError" {
+                    logger.debug("Playback failed with ICError \(nsError.code) for track \(track.title)")
+                    return
+                }
+                logger.debug("Failed to play track \(track.title): \(error.localizedDescription)")
             }
         }
+        logger.info("No tracks could be played; continuing without audio.")
     }
 
     public func pausePlayback() {
@@ -158,8 +186,17 @@ public final class MusicSessionManager {
     private func fetchPlayableSong(id: String) async throws -> Song? {
         let musicItemID = MusicItemID(id)
         var request = MusicCatalogResourceRequest<Song>(matching: \.id, equalTo: musicItemID)
-        let response = try await request.response()
-        return response.items.first
+        do {
+            let response = try await request.response()
+            return response.items.first
+        } catch {
+            let nsError = error as NSError
+            if nsError.domain == "ICError" {
+                logger.debug("Song fetch failed for \(id) with ICError \(nsError.code)")
+                return nil
+            }
+            throw error
+        }
     }
 
     public func fetchDefaultPlaylist() async -> [BiteMusicTrack] {
