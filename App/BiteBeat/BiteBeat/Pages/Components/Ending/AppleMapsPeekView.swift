@@ -28,22 +28,16 @@ struct AppleMapsPeekView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
+        ZStack {
             backgroundLayer
 
             VStack(spacing: 0) {
+                swipeHint
                 Spacer()
-                mapPeekSection
+                card
             }
         }
-        .background(.black)
         .toolbar(.hidden, for: .navigationBar)
-        .safeAreaInset(edge: .top) {
-            topHint
-        }
-        .safeAreaInset(edge: .bottom) {
-            exitButton
-        }
     }
 
     private var backgroundLayer: some View {
@@ -68,43 +62,31 @@ struct AppleMapsPeekView: View {
         .blur(radius: 1.5)
     }
 
-    private var topHint: some View {
-        HStack {
-            Spacer()
-            Text("swipe up to get there")
-                .biteBeatFont(.footnote)
-                .foregroundStyle(Color.onAccent.opacity(0.85))
-            Spacer()
-        }
-        .padding(.top, 8)
-        .padding(.bottom, 4)
+    private var swipeHint: some View {
+        Text("swipe up to get there")
+            .biteBeatFont(.footnote)
+            .foregroundStyle(Color.onAccent.opacity(0.85))
+            .padding(.top, 8)
     }
 
-    private var mapPeekSection: some View {
+    private var card: some View {
         VStack(spacing: 0) {
+            grabber
+                .padding(.top, 10)
+                .padding(.bottom, 6)
+
             mapHeader
 
-            GeometryReader { geometry in
-                ZStack(alignment: .top) {
-                    mapContent
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                        .overlay(alignment: .top) {
-                            directionsHint
-                        }
-                }
+            mapContainer
                 .padding(.horizontal, 16)
-                .padding(.bottom, 16)
-            }
+                .padding(.top, 4)
+
+            doneButton
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
         }
-        .background(
-            .regularMaterial,
-            in: RoundedRectangle(cornerRadius: 32, style: .continuous)
-        )
-        .overlay(alignment: .top) {
-            grabber
-                .padding(.top, 8)
-        }
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 32, style: .continuous))
     }
 
     private var mapHeader: some View {
@@ -130,14 +112,27 @@ struct AppleMapsPeekView: View {
                 Image(systemName: "xmark")
                     .biteBeatFont(.subheadline, weight: .bold)
                     .foregroundStyle(.secondary)
-                    .frame(width: 36, height: 36)
-                    .background(.ultraThinMaterial, in: Circle())
+                    .frame(width: 32, height: 32)
+                    .background(.quaternary, in: Circle())
             }
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 20)
-        .padding(.top, 22)
-        .padding(.bottom, 12)
+        .padding(.bottom, 10)
+    }
+
+    private var mapContainer: some View {
+        GeometryReader { _ in
+            ZStack(alignment: .top) {
+                mapContent
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+
+                directionsHint
+                    .padding(.top, 12)
+            }
+        }
+        .frame(minHeight: 220, idealHeight: 300)
     }
 
     private var mapContent: some View {
@@ -200,18 +195,18 @@ struct AppleMapsPeekView: View {
         .foregroundStyle(Color.accentColor)
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(.regularMaterial, in: .capsule)
-        .padding(.top, 16)
+        .background(.background, in: .capsule)
+        .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
     }
 
     private var grabber: some View {
         Capsule()
-            .fill(Color.secondary.opacity(0.4))
+            .fill(Color.secondary.opacity(0.35))
             .frame(width: 36, height: 4)
     }
 
-    private var exitButton: some View {
-        Button(role: .cancel) {
+    private var doneButton: some View {
+        Button {
             dismiss()
         } label: {
             Text("Done")
@@ -219,10 +214,8 @@ struct AppleMapsPeekView: View {
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.glassProminent)
         .tint(Color.accentColor)
-        .padding(.horizontal, 20)
-        .padding(.bottom, 8)
     }
 
     private func openDirections() {
