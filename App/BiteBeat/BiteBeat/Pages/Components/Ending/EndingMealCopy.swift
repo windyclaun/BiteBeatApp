@@ -3,22 +3,21 @@ import SwiftUI
 
 struct EndingMealCopy: View {
     @State private var isShowingDetails = false
-
     let meal: Meal
 
     var body: some View {
         VStack(spacing: 16) {
             Text(meal.title)
-                .biteBeatFont(.custom(29), weight: .bold)
-                .foregroundStyle(.white)
+                .biteBeatFont(.title, weight: .bold)
+                .foregroundStyle(Color.onAccent)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.78)
 
             VStack(spacing: 8) {
                 Text(meal.crazyFunDescription)
-                    .biteBeatFont(.custom(17), weight: .regular)
-                    .foregroundStyle(.white)
+                    .biteBeatFont(.body)
+                    .foregroundStyle(Color.onAccent)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
                     .lineLimit(2)
@@ -27,17 +26,12 @@ struct EndingMealCopy: View {
                     isShowingDetails = true
                 } label: {
                     Text("See more")
-                        .biteBeatFont(.custom(15), weight: .semibold)
-                        .foregroundStyle(.white)
+                        .biteBeatFont(.subheadline, weight: .semibold)
+                        .foregroundStyle(Color.onAccent)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 6)
-                        .background(.white.opacity(0.16), in: Capsule())
-                        .overlay {
-                            Capsule()
-                                .stroke(.white.opacity(0.22), lineWidth: 1)
-                        }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.glass)
             }
         }
         .padding(.horizontal, 36)

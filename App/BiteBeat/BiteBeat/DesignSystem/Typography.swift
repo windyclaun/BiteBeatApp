@@ -1,6 +1,9 @@
 import SwiftUI
 
 public enum BiteBeatFont {
+    case displayLarge
+    case displayMedium
+    case displaySmall
     case largeTitle
     case title
     case title2
@@ -12,10 +15,11 @@ public enum BiteBeatFont {
     case footnote
     case caption
     case caption2
-    case custom(CGFloat)
 
-    fileprivate var textStyle: Font.TextStyle? {
+    fileprivate var textStyle: Font.TextStyle {
         switch self {
+        case .displayLarge, .displayMedium: return .largeTitle
+        case .displaySmall: return .title
         case .largeTitle: return .largeTitle
         case .title: return .title
         case .title2: return .title2
@@ -27,21 +31,23 @@ public enum BiteBeatFont {
         case .footnote: return .footnote
         case .caption: return .caption
         case .caption2: return .caption2
-        case .custom: return nil
+        }
+    }
+
+    fileprivate var defaultWeight: Font.Weight {
+        switch self {
+        case .displayLarge: return .bold
+        case .displayMedium: return .semibold
+        case .displaySmall: return .bold
+        case .headline: return .bold
+        default: return .regular
         }
     }
 }
 
 public extension View {
-    func biteBeatFont(_ style: BiteBeatFont, weight: Font.Weight = .regular) -> some View {
-        switch style {
-        case .custom(let size):
-            return font(.system(size: size, weight: weight, design: .default))
-        default:
-            guard let textStyle = style.textStyle else {
-                return font(.system(.body, design: .default).weight(weight))
-            }
-            return font(.system(textStyle, design: .default).weight(weight))
-        }
+    func biteBeatFont(_ style: BiteBeatFont, weight: Font.Weight? = nil) -> some View {
+        let w = weight ?? style.defaultWeight
+        return font(.system(style.textStyle, design: .default).weight(w))
     }
 }

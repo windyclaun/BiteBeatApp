@@ -1,24 +1,26 @@
 import SwiftUI
+import OSLog
 
 public final class FoodImageService {
     public static let shared = FoodImageService()
-    
+
+    private let logger = Logger(subsystem: "com.pucakgunung.BiteBeat", category: "FoodImageService")
+
     private init() {}
-    
-    // Queries Wikipedia/Wikimedia API asynchronously without an API key
+
     public func fetchImage(for query: String) async -> String? {
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
         let urlString = "https://id.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=\(encodedQuery)&gsrlimit=1&prop=pageimages&format=json&pithumbsize=600"
-        
+
         guard let url = URL(string: urlString) else { return nil }
-        
+
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            
+
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let queryDict = json["query"] as? [String: Any],
                let pages = queryDict["pages"] as? [String: Any] {
-                
+
                 if let firstPageKey = pages.keys.first,
                    let pageData = pages[firstPageKey] as? [String: Any],
                    let thumbnail = pageData["thumbnail"] as? [String: Any],
@@ -27,9 +29,9 @@ public final class FoodImageService {
                 }
             }
         } catch {
-            print("Failed to fetch Wikipedia image: \(error)")
+            logger.error("Failed to fetch Wikipedia image: \(error.localizedDescription)")
         }
-        
+
         return nil
     }
 }
@@ -40,8 +42,7 @@ struct FoodImageView: View {
     let fallbackUrl: String
     
     @State private var activeImageUrl: String? = nil
-    @State private var isLoading = true
-    
+
     var body: some View {
         ZStack {
             if let imageUrlString = activeImageUrl, let imageUrl = URL(string: imageUrlString) {
@@ -65,14 +66,11 @@ struct FoodImageView: View {
             }
         }
         .task {
-            // Try to fetch image from Wikipedia Public API
             if let liveUrl = await FoodImageService.shared.fetchImage(for: wikipediaQuery) {
                 activeImageUrl = liveUrl
             } else {
-                // Use Unsplash fallback image if Wikipedia API fails
                 activeImageUrl = fallbackUrl
             }
-            isLoading = false
         }
     }
     
@@ -85,7 +83,7 @@ struct FoodImageView: View {
             ))
             .overlay {
                 ProgressView()
-                    .tint(.pink)
+                    .tint(Color.accentColor)
             }
     }
     
@@ -96,7 +94,7 @@ struct FoodImageView: View {
             
             Image(systemName: "fork.knife.circle.fill")
                 .biteBeatFont(.largeTitle)
-                .foregroundStyle(.pink)
+                .foregroundStyle(Color.accentColor)
         }
     }
 }

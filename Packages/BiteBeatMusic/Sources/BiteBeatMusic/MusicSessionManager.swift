@@ -5,6 +5,7 @@
 
 import MusicKit
 import Observation
+import OSLog
 import StoreKit
 
 public enum BiteMusicAuthorizationStatus: Sendable, Codable, Equatable {
@@ -38,6 +39,9 @@ public final class MusicSessionManager {
 
     @ObservationIgnored
     private let storefrontController = SKCloudServiceController()
+
+    @ObservationIgnored
+    private let logger = Logger(subsystem: "com.pucakgunung.BiteBeat", category: "MusicSessionManager")
 
     public var isAuthorized: Bool {
         authorizationStatus == .authorized
@@ -164,7 +168,7 @@ public final class MusicSessionManager {
               let urls = try? JSONDecoder().decode([String].self, from: data) else {
             return getMockDefaultPlaylist()
         }
-        
+
         var trackIDs: [String] = []
         for urlString in urls {
             if let components = URLComponents(string: urlString),
@@ -172,8 +176,12 @@ public final class MusicSessionManager {
                 trackIDs.append(trackId)
             }
         }
-        
+
         if trackIDs.isEmpty {
+            return getMockDefaultPlaylist()
+        }
+
+        guard isAuthorized, canPlayCatalogContent else {
             return getMockDefaultPlaylist()
         }
         
@@ -184,11 +192,11 @@ public final class MusicSessionManager {
             }
             return fetched
         } catch {
-            print("Failed to fetch default playlist from Apple Music API: \(error)")
+            logger.error("Failed to fetch default playlist from Apple Music API: \(error.localizedDescription)")
             return getMockDefaultPlaylist()
         }
     }
-    
+
     public func getMockDefaultPlaylist() -> [BiteMusicTrack] {
         return [
             BiteMusicTrack(

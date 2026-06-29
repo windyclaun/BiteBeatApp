@@ -33,7 +33,7 @@ struct SecretMenuView: View {
                 Section(header: Text("Debug Actions")) {
                     Button(role: .destructive) {
                         DailyMealSelectionStore.resetTodaySelection()
-                        NotificationCenter.default.post(name: NSNotification.Name("ResetHome"), object: nil)
+                        NotificationCenter.default.post(name: .resetHome, object: nil)
                         showResetAlert = true
                     } label: {
                         Label("Reset Today's Mood Analysis", systemImage: "arrow.counterclockwise")

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct EndingView: View {
     @State private var viewModel: EndingViewModel
+    @State private var showMapPeek = false
 
     init(selectedMeal: Meal) {
         _viewModel = State(initialValue: EndingViewModel(selectedMeal: selectedMeal))
@@ -15,7 +16,10 @@ struct EndingView: View {
 
             EndingContentView(
                 meal: viewModel.selectedMeal,
-                greeting: viewModel.enjoymentGreeting
+                greeting: viewModel.enjoymentGreeting,
+                onLetsEat: {
+                    showMapPeek = true
+                }
             )
         }
         .navigationBarBackButtonHidden()
@@ -24,6 +28,14 @@ struct EndingView: View {
         }
         .onDisappear {
             viewModel.handleOnDisappear()
+        }
+        .sheet(isPresented: $showMapPeek, onDismiss: {
+            NotificationCenter.default.post(name: .resetHome, object: nil)
+        }) {
+            AppleMapsPeekView(meal: viewModel.selectedMeal)
+                .presentationDetents([.fraction(0.5), .large])
+                .presentationDragIndicator(.hidden)
+                .presentationBackground(.clear)
         }
     }
 }
@@ -35,9 +47,7 @@ struct EndingView: View {
         location: "Nasi Uduk Ibu Sum (0.4 km)",
         calories: "680 kcal",
         description: "Nasi uduk gurih wangi pandan disajikan hangat pakai ayam goreng kuning renyah, tempe garing, lalapan segar, plus sambal terasi ulek yang pedasnya mantap!",
-        crazyFunDescription: "Warning — this meal may trigger spontaneous shoulder dancing.",
-        systemImage: "flame.fill",
-        gradientColors: ["orange", "red"]
-        
+        crazyFunDescription: "Warning — this meal may trigger spontaneous shoulder dancing."
+
     ))
 }

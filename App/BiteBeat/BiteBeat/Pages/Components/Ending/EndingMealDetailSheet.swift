@@ -14,7 +14,12 @@ struct EndingMealDetailSheet: View {
                     quickFactsView
                     detailSection(title: "Description", text: meal.description)
                     detailSection(title: "Crazy Fun Description", text: meal.crazyFunDescription)
-                    detailSection(title: "Restaurant", text: meal.location)
+
+                    if let address = meal.restaurantAddress, !address.isEmpty {
+                        detailSection(title: "Address", text: address)
+                    }
+
+                    openInMapsButton
                 }
                 .padding(24)
             }
@@ -42,6 +47,12 @@ struct EndingMealDetailSheet: View {
             Text(meal.restaurantName)
                 .biteBeatFont(.subheadline)
                 .foregroundStyle(.secondary)
+
+            if let distance = meal.formattedDistance {
+                Text(distance)
+                    .biteBeatFont(.caption)
+                    .foregroundStyle(Color.accentColor)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -53,11 +64,29 @@ struct EndingMealDetailSheet: View {
         }
     }
 
+    @ViewBuilder
+    private var openInMapsButton: some View {
+        if meal.latitude != nil && meal.longitude != nil {
+            Button {
+                Task {
+                    await MapsHelper.openInMaps(for: meal)
+                }
+            } label: {
+                Label("Open in Maps", systemImage: "map.fill")
+                    .biteBeatFont(.subheadline, weight: .bold)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+            }
+            .buttonStyle(.glassProminent)
+            .tint(Color.accentColor)
+        }
+    }
+
     private func factChip(title: String, value: String, systemImage: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: systemImage)
                 .biteBeatFont(.subheadline, weight: .semibold)
-                .foregroundStyle(.pink)
+                .foregroundStyle(Color.accentColor)
                 .frame(width: 24, height: 24)
 
             VStack(alignment: .leading, spacing: 2) {
