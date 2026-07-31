@@ -1,9 +1,5 @@
-//
-//  RecommendationViewModel.swift
-//  BiteBeat
-//
-
 import SwiftUI
+import MapKit
 import Observation
 import BiteBeatMusic
 
@@ -11,32 +7,41 @@ import BiteBeatMusic
 @MainActor
 public final class RecommendationViewModel {
     public let vibeName: String
+    public let vibeDescription: String
     public let mainMeal: Meal
     public let alternatives: [Meal]
-    
+    public let restaurants: [RestaurantDishes]
+    public let isMapsFlow: Bool
+
     public var choseNay = false
     public var selectedAlternative: Meal?
-    public var navigateToEnding = false
-    public var finalMeal: Meal?
-    
-    public init(vibeName: String, mainMeal: Meal, alternatives: [Meal]) {
-        self.vibeName = vibeName
-        self.mainMeal = mainMeal
-        self.alternatives = alternatives
+    public var drillInRestaurantIndex: Int?
+    public var mapPosition: MapCameraPosition = .automatic
+
+    init(data: RecommendationData) {
+        self.vibeName = data.vibeName
+        self.vibeDescription = data.vibeDescription
+        self.mainMeal = data.mainMeal
+        self.alternatives = data.alternatives
+        self.restaurants = data.restaurants
+        self.isMapsFlow = data.isMapsFlow
     }
-    
-    public func selectMainMeal() {
-        finalMeal = mainMeal
-        navigateToEnding = true
+
+    public var drillInRestaurant: RestaurantDishes? {
+        guard let idx = drillInRestaurantIndex, restaurants.indices.contains(idx) else { return nil }
+        return restaurants[idx]
     }
-    
-    public func selectAlternativeMeal() {
-        if let selectedAlternative {
-            finalMeal = selectedAlternative
-            navigateToEnding = true
+
+    public func openDrillIn(for restaurant: RestaurantDishes) {
+        if let idx = restaurants.firstIndex(where: { $0.id == restaurant.id }) {
+            drillInRestaurantIndex = idx
         }
     }
-    
+
+    public func closeDrillIn() {
+        drillInRestaurantIndex = nil
+    }
+
     public func toggleShowAlternatives(show: Bool) {
         withAnimation(.spring(response: 0.45, dampingFraction: 0.7)) {
             choseNay = show
@@ -45,17 +50,21 @@ public final class RecommendationViewModel {
             }
         }
     }
-    
+
     public func selectAlternativeCard(_ meal: Meal) {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
             selectedAlternative = meal
         }
     }
-    
+
     public func resetToMainSelection() {
         withAnimation(.spring(response: 0.45, dampingFraction: 0.7)) {
             choseNay = false
             selectedAlternative = nil
         }
+    }
+
+    public func openInMaps(_ meal: Meal) async {
+        await MapsHelper.openInMaps(for: meal)
     }
 }

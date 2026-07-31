@@ -15,12 +15,12 @@ struct SongRow: View {
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(song.title)
-                    .font(.body.weight(.medium))
+                    .biteBeatFont(.body, weight: .medium)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 
                 Text(song.artistName)
-                    .font(.caption)
+                    .biteBeatFont(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }

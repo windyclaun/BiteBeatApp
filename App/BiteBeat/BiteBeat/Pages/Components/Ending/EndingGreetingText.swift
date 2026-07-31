@@ -5,8 +5,8 @@ struct EndingGreetingText: View {
 
     var body: some View {
         Text(greeting)
-            .font(.system(size: 34, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
+            .biteBeatFont(.largeTitle, weight: .bold)
+            .foregroundStyle(Color.onAccent)
             .multilineTextAlignment(.center)
             .minimumScaleFactor(0.8)
             .lineLimit(1)

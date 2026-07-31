@@ -1,75 +1,8 @@
 import Foundation
+import CoreLocation
 import BiteBeatMusic
 import SwiftUI
 import FoundationModels
-
-// Data model for a recommended meal
-public struct Meal: Identifiable, Hashable, Codable, Sendable {
-    public let id: UUID
-    public let title: String
-    public let price: String
-    public let location: String
-    public let calories: String
-    public let description: String
-    public let systemImage: String
-    public let gradientColors: [String] // Color name strings for generating SwiftUI gradients
-    public let imageUrl: String
-    public let crazyFunDescription: String
-
-    nonisolated public static let defaultCrazyFunDescription = "Warning - this meal may trigger spontaneous shoulder dancing."
-    
-    nonisolated public init(
-        title: String,
-        price: String,
-        location: String,
-        calories: String,
-        description: String,
-        crazyFunDescription: String = Meal.defaultCrazyFunDescription,
-        systemImage: String,
-        gradientColors: [String],
-        imageUrl: String = ""
-    ) {
-        self.id = UUID()
-        self.title = title
-        self.price = price
-        self.location = location
-        self.calories = calories
-        self.description = description
-        self.systemImage = systemImage
-        self.gradientColors = gradientColors
-        self.imageUrl = imageUrl
-        self.crazyFunDescription = crazyFunDescription
-    }
-    
-    public var wikipediaSearchQuery: String {
-        return title
-    }
-    
-    // Cleans up any trailing distance labels from the restaurant location
-    public var restaurantName: String {
-        if let index = location.firstIndex(of: "(") {
-            return String(location[..<index]).trimmingCharacters(in: .whitespaces)
-        }
-        return location
-    }
-    
-    // Converts color name strings into SwiftUI Color instances
-    public var swiftUIColors: [Color] {
-        gradientColors.map { colorName in
-            switch colorName.lowercased() {
-            case "red": return .red
-            case "orange": return .orange
-            case "yellow": return .yellow
-            case "green": return .green
-            case "teal": return .teal
-            case "blue": return .blue
-            case "purple": return .purple
-            case "pink": return .pink
-            default: return .pink
-            }
-        }
-    }
-}
 
 // Data structures for AI Response decoding
 fileprivate struct AIResponse: Codable {
@@ -86,8 +19,17 @@ fileprivate struct AIMeal: Codable {
     let calories: String
     let description: String
     let crazyFunDescription: String?
-    let systemImage: String
-    let gradientColors: [String]
+}
+
+fileprivate struct AIResponseRestaurants: Codable {
+    let vibeName: String
+    let vibeDescription: String
+    let restaurants: [AIRestaurantDishes]
+}
+
+fileprivate struct AIRestaurantDishes: Codable {
+    let name: String
+    let dishes: [AIMeal]
 }
 
 public enum AnalyzerLanguage: String, Sendable {
@@ -95,43 +37,18 @@ public enum AnalyzerLanguage: String, Sendable {
     case english = "English"
 }
 
-public enum AnalyzerMode: Sendable {
-    case creative
-    case database(jsonString: String)
-}
-
-@available(iOS 26.0, *)
 public final class MusicToFoodAnalyzer: Sendable {
     public let language: AnalyzerLanguage
-    public let mode: AnalyzerMode
-    
-    public init(language: AnalyzerLanguage = .english, mode: AnalyzerMode = .creative) {
+
+    public init(language: AnalyzerLanguage = .english) {
         self.language = language
-        self.mode = mode
     }
-    
-    /// Creates a MusicToFoodAnalyzer that grounds recommendations using the local 'foods.json' database asset or creative mode based on UserDefaults.
+
+    /// Creates a MusicToFoodAnalyzer using the user's language preference and AI-driven creative mode.
     public static func makeDefault() -> MusicToFoodAnalyzer {
-        // 1. Read language preference
         let storedLanguage = UserDefaults.standard.string(forKey: "analyzerLanguage") ?? "english"
         let language: AnalyzerLanguage = (storedLanguage == "indonesian") ? .indonesian : .english
-        
-        // 2. Determine mode based on override
-        let storedModeOverride = UserDefaults.standard.string(forKey: "overrideAnalyzerMode") ?? "auto"
-        var mode = AnalyzerMode.creative
-        
-        if storedModeOverride == "forceCreative" {
-            mode = .creative
-        } else {
-            // Attempt to load database
-            if let url = Bundle.main.url(forResource: "foods", withExtension: "json"),
-               let data = try? Data(contentsOf: url),
-               let jsonString = String(data: data, encoding: .utf8) {
-                mode = .database(jsonString: jsonString)
-            }
-        }
-        
-        return MusicToFoodAnalyzer(language: language, mode: mode)
+        return MusicToFoodAnalyzer(language: language)
     }
     
     /// Main analysis function that translates tracks into food recommendations (one main, two alternatives) using Apple Intelligence.
@@ -142,8 +59,6 @@ public final class MusicToFoodAnalyzer: Sendable {
         var promptText = """
         You are a food and music expert. Analyze the following PLAYLIST ANALYSIS and recommend 3 food dishes (1 main, 2 alternatives) that perfectly match the emotional and sonic vibe of the playlist.
         The output (vibeName, vibeDescription, title, and description) MUST be in \(language.rawValue) language.
-        
-        CRITICAL RULE: You MUST NOT recommend any starch-based street foods (berbahan dasar aci) such as Seblak, Batagor, Siomay, Pempek, Cireng, Cilok, etc. You also MUST NOT recommend any meatballs (Bakso) under any circumstances. Focus on rich and satisfying standard meals or wholesome dishes instead.
         
         PLAYLIST ANALYSIS:
         - Dominant Genres: \(dominantGenres)
@@ -160,23 +75,12 @@ public final class MusicToFoodAnalyzer: Sendable {
         
         Be highly creative and empathetic. Synthesize the multiple songs into a cohesive culinary story. Do not just use a dry recipe description.
         """
-        
-        switch mode {
-        case .creative:
-            promptText += "\n\nYou are free to recommend any suitable Indonesian food."
-        case .database(let jsonString):
-            promptText += """
-            
-            
-            CRITICAL INSTRUCTION: You MUST ONLY select the 3 food dishes from the following JSON database. Do not invent new foods.
-            If the selected food has a 'calories' value in the database, use it exactly. If it does NOT have a 'calories' value (or is missing), you must carefully estimate the calories yourself (e.g. "500 kcal").
-            Database:
-            \(jsonString)
-            """
-        }
-        
+        promptText += FoodPreferences.current().filterPromptBlock()
+
         promptText += """
-        
+
+
+        You are free to recommend any suitable Indonesian food that matches the vibe. Do not be constrained by a fixed list.
 
         Respond EXACTLY in this JSON format without any markdown blocks or extra text, providing exactly 1 main meal and exactly 2 alternative meals:
         {
@@ -188,9 +92,7 @@ public final class MusicToFoodAnalyzer: Sendable {
             "location": "Dummy restaurant name",
             "calories": "600 kcal",
             "description": "Appetizing description of the food",
-            "crazyFunDescription": "Crazy fun fact about the food",
-            "systemImage": "flame.fill",
-            "gradientColors": ["orange", "red"]
+            "crazyFunDescription": "Crazy fun fact about the food"
           },
           "alternatives": [
             {
@@ -199,9 +101,7 @@ public final class MusicToFoodAnalyzer: Sendable {
               "location": "Dummy restaurant 2",
               "calories": "500 kcal",
               "description": "Appetizing description",
-              "crazyFunDescription": "Crazy fun fact about the food",
-              "systemImage": "leaf.fill",
-              "gradientColors": ["green", "teal"]
+              "crazyFunDescription": "Crazy fun fact about the food"
             },
             {
               "title": "Dish name 3",
@@ -209,9 +109,7 @@ public final class MusicToFoodAnalyzer: Sendable {
               "location": "Dummy restaurant 3",
               "calories": "400 kcal",
               "description": "Appetizing description",
-              "crazyFunDescription": "Crazy fun fact about the food",
-              "systemImage": "star.fill",
-              "gradientColors": ["purple", "pink"]
+              "crazyFunDescription": "Crazy fun fact about the food"
             }
           ]
         }
@@ -237,11 +135,9 @@ public final class MusicToFoodAnalyzer: Sendable {
             location: result.mainMeal.location,
             calories: result.mainMeal.calories,
             description: result.mainMeal.description,
-            crazyFunDescription: result.mainMeal.crazyFunDescription ?? Meal.defaultCrazyFunDescription,
-            systemImage: result.mainMeal.systemImage,
-            gradientColors: result.mainMeal.gradientColors
+            crazyFunDescription: result.mainMeal.crazyFunDescription ?? Meal.defaultCrazyFunDescription
         )
-        
+
         let alternatives = result.alternatives.map {
             Meal(
                 title: $0.title,
@@ -249,9 +145,7 @@ public final class MusicToFoodAnalyzer: Sendable {
                 location: $0.location,
                 calories: $0.calories,
                 description: $0.description,
-                crazyFunDescription: $0.crazyFunDescription ?? Meal.defaultCrazyFunDescription,
-                systemImage: $0.systemImage,
-                gradientColors: $0.gradientColors
+                crazyFunDescription: $0.crazyFunDescription ?? Meal.defaultCrazyFunDescription
             )
         }
         
@@ -274,6 +168,142 @@ public final class MusicToFoodAnalyzer: Sendable {
         } else {
             return topGenres.joined(separator: ", ")
         }
+    }
+
+    public func analyze(
+        songs: [BiteMusicTrack],
+        nearbyRestaurants: [NearbyRestaurant]
+    ) async throws -> (vibeName: String, vibeDescription: String, restaurants: [RestaurantDishes]) {
+        let dominantGenres = extractDominantGenres(from: songs)
+        let songsList = songs.isEmpty
+            ? "No recent songs, default to soft and calming music."
+            : songs.map { "- \($0.title) by \($0.artistName) (Genres: \($0.genreNames.joined(separator: ", ")))" }.joined(separator: "\n")
+
+        let restaurantList = nearbyRestaurants.enumerated().map { index, r in
+            let distStr = r.distanceInMeters < 1000
+                ? String(format: "%.0fm", r.distanceInMeters)
+                : String(format: "%.1fkm", r.distanceInMeters / 1000)
+            return "Restaurant \(index + 1): \(r.name) (\(distStr) away)"
+        }.joined(separator: "\n")
+
+        var promptText = """
+        You are a food and music expert. The user is near the following REAL restaurants. For EACH restaurant, suggest 3 dishes that the restaurant would plausibly serve, matched to the user's music vibe.
+        The output (vibeName, vibeDescription, title, description) MUST be in \(language.rawValue) language.
+
+        NEARBY REAL RESTAURANTS:
+        \(restaurantList)
+
+        PLAYLIST ANALYSIS:
+        - Dominant Genres: \(dominantGenres)
+        - Track List:
+        \(songsList)
+
+        DISH SUGGESTION RULES:
+        - Each restaurant's dishes MUST match what that type of restaurant would plausibly serve. Infer the cuisine type from the restaurant name.
+        - The vibe of the music should influence dish SELECTION (e.g. upbeat music → bold/spicy dishes, chill music → comfort food).
+        - Label your suggestions as "Menu suggested by AI", NOT literal menus.
+
+        DESCRIPTIONS STYLE RULE:
+        For each recommended meal, the 'description' field MUST be a highly personalized, creative, and emotionally resonant explanation written in \(language.rawValue). Mention SEVERAL song titles and artists from the playlist. INFER and QUOTE 1-2 famous lyrics to explain the mood.
+        """
+        promptText += FoodPreferences.current().filterPromptBlock()
+
+        promptText += """
+
+
+        You are free to recommend any suitable dishes for each restaurant. Do not be constrained by a fixed list.
+
+        Respond EXACTLY in this JSON format without any markdown blocks or extra text. Provide exactly \(nearbyRestaurants.count) restaurants with 3 dishes each:
+        {
+          "vibeName": "Short vibe name (e.g. Vibrant & Spicy)",
+          "vibeDescription": "A short explanation of the music vibe and food connection.",
+          "restaurants": [
+            {
+              "name": "\(nearbyRestaurants.first?.name ?? "Restaurant 1")",
+              "dishes": [
+                {
+                  "title": "Dish name",
+                  "price": "Rp 25.000",
+                  "location": "Same as restaurant name",
+                  "calories": "600 kcal",
+                  "description": "Creative description referencing songs and lyrics",
+                  "crazyFunDescription": "Fun fact about the dish"
+                }
+              ]
+            }
+          ]
+        }
+        """
+
+        let session = LanguageModelSession(model: SystemLanguageModel(useCase: .general))
+        let response = try await session.respond(to: promptText)
+        let jsonText = response.content
+
+        let cleanJSON = jsonText.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "```json", with: "")
+            .replacingOccurrences(of: "```", with: "")
+
+        guard let data = cleanJSON.data(using: .utf8) else {
+            throw URLError(.cannotDecodeRawData)
+        }
+
+        let result = try JSONDecoder().decode(AIResponseRestaurants.self, from: data)
+
+        var matched: [RestaurantDishes] = []
+        var usedIndices = Set<Int>()
+
+        for aiRestaurant in result.restaurants {
+            let normalizedName = aiRestaurant.name.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if let idx = nearbyRestaurants.enumerated().first(where: { _, r in
+                r.name.lowercased().contains(normalizedName) || normalizedName.contains(r.name.lowercased())
+            })?.offset, !usedIndices.contains(idx) {
+                usedIndices.insert(idx)
+                let meals = aiRestaurant.dishes.map { aiMeal in
+                    Meal(
+                        title: aiMeal.title,
+                        price: aiMeal.price,
+                        location: nearbyRestaurants[idx].name,
+                        calories: aiMeal.calories,
+                        description: aiMeal.description,
+                        crazyFunDescription: aiMeal.crazyFunDescription ?? Meal.defaultCrazyFunDescription,
+                        realRestaurantName: nearbyRestaurants[idx].name,
+                        restaurantAddress: nearbyRestaurants[idx].address,
+                        latitude: nearbyRestaurants[idx].coordinate.latitude,
+                        longitude: nearbyRestaurants[idx].coordinate.longitude,
+                        distanceInMeters: nearbyRestaurants[idx].distanceInMeters,
+                        mapItemIdentifier: nearbyRestaurants[idx].mapItemIdentifier
+                    )
+                }
+                matched.append(RestaurantDishes(restaurant: nearbyRestaurants[idx], dishes: meals))
+            }
+        }
+
+        if matched.count < nearbyRestaurants.count {
+            for (idx, restaurant) in nearbyRestaurants.enumerated() where !usedIndices.contains(idx) {
+                let aiIdx = matched.count
+                let aiRestaurant = result.restaurants.indices.contains(aiIdx) ? result.restaurants[aiIdx] : nil
+                let meals = (aiRestaurant?.dishes ?? []).map { aiMeal in
+                    Meal(
+                        title: aiMeal.title,
+                        price: aiMeal.price,
+                        location: restaurant.name,
+                        calories: aiMeal.calories,
+                        description: aiMeal.description,
+                        crazyFunDescription: aiMeal.crazyFunDescription ?? Meal.defaultCrazyFunDescription,
+                        realRestaurantName: restaurant.name,
+                        restaurantAddress: restaurant.address,
+                        latitude: restaurant.coordinate.latitude,
+                        longitude: restaurant.coordinate.longitude,
+                        distanceInMeters: restaurant.distanceInMeters,
+                        mapItemIdentifier: restaurant.mapItemIdentifier
+                    )
+                }
+                matched.append(RestaurantDishes(restaurant: restaurant, dishes: meals))
+            }
+        }
+
+        return (result.vibeName, result.vibeDescription, matched)
     }
 }
 

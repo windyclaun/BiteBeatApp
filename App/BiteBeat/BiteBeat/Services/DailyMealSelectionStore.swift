@@ -1,10 +1,5 @@
 import Foundation
 
-public struct DailyMealSelection: Codable, Sendable {
-    public let selectedAt: Date
-    public let meal: Meal
-}
-
 public enum DailyMealSelectionStore {
     private static let selectedMealKey = "dailySelectedMeal"
     private static let mealHistoryKey = "mealSelectionHistory"

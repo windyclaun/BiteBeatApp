@@ -16,19 +16,11 @@ struct ContentView: View {
                         removal: .move(edge: .bottom).combined(with: .opacity)
                     ))
             } else if !hasAcknowledgedAppleIntelligence {
-                if #available(iOS 26.0, *) {
-                    AppleIntelligencePermissionView(hasAcknowledgedAppleIntelligence: $hasAcknowledgedAppleIntelligence)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal: .move(edge: .bottom).combined(with: .opacity)
-                        ))
-                } else {
-                    AppleIntelligenceInfoView(hasAcknowledgedAppleIntelligence: $hasAcknowledgedAppleIntelligence)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal: .move(edge: .bottom).combined(with: .opacity)
-                        ))
-                }
+                AppleIntelligencePermissionView(hasAcknowledgedAppleIntelligence: $hasAcknowledgedAppleIntelligence)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .move(edge: .bottom).combined(with: .opacity)
+                    ))
             } else {
                 HomeView()
                     .transition(.opacity)
@@ -43,26 +35,25 @@ struct ContentView: View {
     }
 }
 
-@available(iOS 26.0, *)
 private struct AppleIntelligencePermissionView: View {
     @Binding var hasAcknowledgedAppleIntelligence: Bool
     private let model = SystemLanguageModel.default
 
     var body: some View {
         ZStack {
-            Color.pink
+            Color.accentColor
                 .ignoresSafeArea()
 
             VStack(spacing: 16) {
                 Spacer()
 
                 Image("LogoApp")
-                    .font(.system(size: 80, weight: .bold))
-                    .foregroundStyle(.white)
+                    .biteBeatFont(.displayLarge, weight: .bold)
+                    .foregroundStyle(Color.onAccent)
 
                 Text("BiteBeat")
-                    .font(.system(size: 38, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .biteBeatFont(.displayMedium, weight: .bold)
+                    .foregroundStyle(Color.onAccent)
 
                 Spacer()
             }
@@ -73,16 +64,15 @@ private struct AppleIntelligencePermissionView: View {
 
             VStack(spacing: 20) {
                 Image(systemName: "apple.intelligence")
-                    .font(.system(size: 44, weight: .semibold))
-                    .foregroundStyle(.pink)
+                    .biteBeatFont(.title, weight: .semibold)
+                    .foregroundStyle(Color.accentColor)
 
                 Text("Apple Intelligence")
-                    .font(.headline)
-                    .fontWeight(.bold)
+                    .biteBeatFont(.headline)
                     .foregroundStyle(.primary)
 
                 Text("BiteBeat uses on-device Apple Intelligence to understand your music vibe and turn it into a food recommendation.")
-                    .font(.subheadline)
+                    .biteBeatFont(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 10)
@@ -94,43 +84,32 @@ private struct AppleIntelligencePermissionView: View {
                     .padding(.top, 8)
             }
             .padding(24)
-            .frame(width: 320)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color(uiColor: .systemBackground))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color(uiColor: .separator), lineWidth: 0.5)
-            )
-            .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
+            .frame(maxWidth: 340)
+            .glassEffect(.regular, in: .rect(cornerRadius: 20))
         }
     }
 
     private var statusBanner: some View {
-        Label(availabilityMessage, systemImage: availabilityIcon)
-            .font(.caption)
-            .foregroundStyle(availabilityColor)
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(availabilityColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
+        StatusLabel(
+            icon: availabilityIcon,
+            message: availabilityMessage,
+            color: availabilityColor
+        )
     }
 
     private var actionButtonsView: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 12) {
             if AppleIntelligenceHelper.isNotEnabled {
                 Button {
-                    openSystemSettings()
+                    SystemSettingsOpener.openAppleIntelligenceSettings()
                 } label: {
                     Text("Open Settings")
-                        .font(.subheadline)
-                        .bold()
+                        .biteBeatFont(.subheadline, weight: .bold)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.pink)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .buttonStyle(.glassProminent)
+                .tint(Color.accentColor)
             } else {
                 Button {
                     withAnimation(.spring(response: 0.6, dampingFraction: 0.82)) {
@@ -138,14 +117,12 @@ private struct AppleIntelligencePermissionView: View {
                     }
                 } label: {
                     Text("Continue")
-                        .font(.subheadline)
-                        .bold()
+                        .biteBeatFont(.subheadline, weight: .bold)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.pink)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .buttonStyle(.glassProminent)
+                .tint(Color.accentColor)
             }
         }
     }
@@ -183,75 +160,11 @@ private struct AppleIntelligencePermissionView: View {
     private var availabilityColor: Color {
         switch model.availability {
         case .available:
-            return .green
+            return .statusGreen
         case .unavailable(.appleIntelligenceNotEnabled), .unavailable(.modelNotReady):
-            return .orange
+            return .statusOrange
         case .unavailable(.deviceNotEligible), .unavailable:
             return .secondary
-        }
-    }
-
-    private func openSystemSettings() {
-        if let globalSettingsURL = URL(string: "App-Prefs:") {
-            UIApplication.shared.open(globalSettingsURL, options: [:]) { success in
-                if !success {
-                    if let appSettingsURL = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(appSettingsURL)
-                    }
-                }
-            }
-        } else if let appSettingsURL = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(appSettingsURL)
-        }
-    }
-}
-
-private struct AppleIntelligenceInfoView: View {
-    @Binding var hasAcknowledgedAppleIntelligence: Bool
-
-    var body: some View {
-        ZStack {
-            Color.pink
-                .ignoresSafeArea()
-
-            VStack(spacing: 20) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 44, weight: .semibold))
-                    .foregroundStyle(.pink)
-
-                Text("Apple Intelligence")
-                    .font(.headline)
-                    .fontWeight(.bold)
-
-                Text("BiteBeat uses Apple Intelligence on supported devices to match your music vibe with food recommendations.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
-
-                Button {
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.82)) {
-                        hasAcknowledgedAppleIntelligence = true
-                    }
-                } label: {
-                    Text("Continue")
-                        .font(.subheadline)
-                        .bold()
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.pink)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .padding(.top, 8)
-            }
-            .padding(24)
-            .frame(width: 320)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color(uiColor: .systemBackground))
-            )
-            .shadow(color: .black.opacity(0.15), radius: 20, y: 8)
         }
     }
 }
@@ -259,5 +172,5 @@ private struct AppleIntelligenceInfoView: View {
 #Preview {
     ContentView()
         .environment(MusicSessionManager())
+        .environment(LocationManager())
 }
-

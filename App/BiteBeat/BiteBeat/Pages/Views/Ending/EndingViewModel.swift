@@ -11,9 +11,9 @@ import BiteBeatMusic
 @MainActor
 public final class EndingViewModel {
     public let selectedMeal: Meal
-    public var animateSteps = false
-    public var enjoymentGreeting = "Selamat Makan! 🇮🇩"
+    public var enjoymentGreeting = "Enjoy Your Meal!"
 
+    private let celebrationSoundPlayer = CelebrationSoundPlayer()
     private let greetings = [
         "Selamat Makan! 🇮🇩",
         "Bon Appétit! 🇫🇷",
@@ -33,9 +33,14 @@ public final class EndingViewModel {
 
     public func handleOnAppear() {
         DailyMealSelectionStore.save(selectedMeal)
+        celebrationSoundPlayer.play()
 
         if let randomGreeting = greetings.randomElement() {
             enjoymentGreeting = randomGreeting
         }
+    }
+
+    public func handleOnDisappear() {
+        celebrationSoundPlayer.stop()
     }
 }

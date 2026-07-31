@@ -14,7 +14,12 @@ struct EndingMealDetailSheet: View {
                     quickFactsView
                     detailSection(title: "Description", text: meal.description)
                     detailSection(title: "Crazy Fun Description", text: meal.crazyFunDescription)
-                    detailSection(title: "Restaurant", text: meal.location)
+
+                    if let address = meal.restaurantAddress, !address.isEmpty {
+                        detailSection(title: "Address", text: address)
+                    }
+
+                    openInMapsButton
                 }
                 .padding(24)
             }
@@ -35,13 +40,19 @@ struct EndingMealDetailSheet: View {
     private var headerView: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(meal.title)
-                .font(.title2.bold())
+                .biteBeatFont(.title2, weight: .bold)
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
 
             Text(meal.restaurantName)
-                .font(.subheadline)
+                .biteBeatFont(.subheadline)
                 .foregroundStyle(.secondary)
+
+            if let distance = meal.formattedDistance {
+                Text(distance)
+                    .biteBeatFont(.caption)
+                    .foregroundStyle(Color.accentColor)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -53,20 +64,38 @@ struct EndingMealDetailSheet: View {
         }
     }
 
+    @ViewBuilder
+    private var openInMapsButton: some View {
+        if meal.latitude != nil && meal.longitude != nil {
+            Button {
+                Task {
+                    await MapsHelper.openInMaps(for: meal)
+                }
+            } label: {
+                Label("Open in Maps", systemImage: "map.fill")
+                    .biteBeatFont(.subheadline, weight: .bold)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+            }
+            .buttonStyle(.glassProminent)
+            .tint(Color.accentColor)
+        }
+    }
+
     private func factChip(title: String, value: String, systemImage: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: systemImage)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.pink)
+                .biteBeatFont(.subheadline, weight: .semibold)
+                .foregroundStyle(Color.accentColor)
                 .frame(width: 24, height: 24)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption)
+                    .biteBeatFont(.caption)
                     .foregroundStyle(.secondary)
 
                 Text(value)
-                    .font(.subheadline.weight(.semibold))
+                    .biteBeatFont(.subheadline, weight: .semibold)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
@@ -80,11 +109,11 @@ struct EndingMealDetailSheet: View {
     private func detailSection(title: String, text: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.headline)
+                .biteBeatFont(.headline)
                 .foregroundStyle(.primary)
 
             Text(text)
-                .font(.body)
+                .biteBeatFont(.body)
                 .foregroundStyle(.secondary)
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)

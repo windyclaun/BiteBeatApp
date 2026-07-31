@@ -4,7 +4,7 @@ import SwiftUI
 struct EndingContentView: View {
     let meal: Meal
     let greeting: String
-
+    let onLetsEat: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -20,7 +20,7 @@ struct EndingContentView: View {
 
             Spacer(minLength: 32)
 
-            EndingActionButton()
+            EndingActionButton(action: onLetsEat)
                 .padding(.horizontal, 38)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -34,8 +34,6 @@ struct EndingContentView: View {
         location: "Nasi Uduk Ibu Sum (0.4 km)",
         calories: "680 kcal",
         description: "Nasi uduk gurih wangi pandan disajikan hangat pakai ayam goreng kuning renyah, tempe garing, lalapan segar, plus sambal terasi ulek yang pedasnya mantap!",
-        crazyFunDescription: "Warning — this meal may trigger spontaneous shoulder dancing.",
-        systemImage: "flame.fill",
-        gradientColors: ["orange", "red"]
+        crazyFunDescription: "Warning — this meal may trigger spontaneous shoulder dancing."
     ))
 }

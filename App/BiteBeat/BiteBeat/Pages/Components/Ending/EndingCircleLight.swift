@@ -24,7 +24,7 @@ struct EndingCircleLight: View {
                 )
 
             Circle()
-                .fill(.pink.opacity(0.22))
+                .fill(Color.accentColor.opacity(0.22))
                 .frame(width: imageSize * 0.74, height: imageSize * 0.74)
                 .blur(radius: 26)
                 .offset(

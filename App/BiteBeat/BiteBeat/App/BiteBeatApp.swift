@@ -11,12 +11,13 @@ import SwiftUI
 @main
 struct BiteBeatApp: App {
     @State private var musicSession = MusicSessionManager()
+    @State private var locationManager = LocationManager()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(musicSession)
-                .preferredColorScheme(.light)
+                .environment(locationManager)
                 .task {
                     await musicSession.observeSubscriptionUpdates()
                 }
